@@ -4,7 +4,7 @@ import { Vector } from "../src/math";
 import { ScalarMatrix } from "../src/math";
 
 describe("processContext simple", () => {
-  it("runs for a single-entry dataset", () => {
+  it("runs for a single-entry dataset", async () => {
     const ctx = newContext({
       extensions: {},
       factorScoreCombineWeight: new Vector([1, 1]),
@@ -20,7 +20,7 @@ describe("processContext simple", () => {
       impacts: [impact],
       relations: [],
     };
-    const res = processContext(ctx, data);
+    const res = await processContext(ctx, data);
     const r = res.get("e1");
     expect(r).toBeDefined();
     expect(r?.overallVector.data.length).toBe(2);

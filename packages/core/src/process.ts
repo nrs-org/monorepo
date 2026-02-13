@@ -23,42 +23,19 @@ export interface ContextAPI {
 }
 
 export interface Context {
-  extensions: Record<string, unknown>;
   factorScoreCombineWeight: Vector;
   api: ContextAPI;
 }
 
 export interface ContextConfig {
-  extensions: Record<string, unknown>;
   factorScoreCombineWeight?: Vector;
-}
-
-function checkExtensionDependencies(extensions: Record<string, unknown>) {
-  for (const [name, ext] of Object.entries(extensions)) {
-    if (ext === undefined) continue;
-    const extension = ext as { dependencies?: () => string[] };
-    if (typeof extension.dependencies === "function") {
-      const missing = extension
-        .dependencies()
-        .filter(
-          (n) => (extensions as Record<string, unknown>)[n] === undefined,
-        );
-      if (missing.length > 0) {
-        throw new Error(
-          `Extension ${name} has missing dependencies: ${missing.join(", ")}`,
-        );
-      }
-    }
-  }
 }
 
 export function newContext(config: ContextConfig): Context {
   const factorScoreCombineWeight = config.factorScoreCombineWeight;
   if (!factorScoreCombineWeight)
     throw new Error("factor score combine weight not specified");
-  checkExtensionDependencies(config.extensions || {});
   return {
-    extensions: config.extensions || {},
     factorScoreCombineWeight,
     api: {
       newVector: (d: number[]) => new Vector(d),
@@ -202,11 +179,10 @@ function createRelationMaps(
   return relationMaps;
 }
 
-export function processContext(context: Context, data: Data): Map<Id, Result> {
-  // ifDefined((context.extensions || {}).DAH_entry_roles, (e) =>
-  //   e.preprocessData?.(context, data),
-  // );
-
+export async function processContext(
+  context: Context,
+  data: Data,
+): Promise<Map<Id, Result>> {
   const positiveConstScores = constScoreCalc(context, data, 1.0);
   const negativeConstScores = constScoreCalc(context, data, -1.0);
   const entrySccs = topoSortEntries(context, data);
@@ -300,15 +276,7 @@ export function processContext(context: Context, data: Data): Map<Id, Result> {
     });
   }
 
-  // ifDefined((context.extensions || {}).DAH_overall_score, (ext) =>
-  //   ext.postProcess?.(context, results),
-  // );
-  // ifDefined((context.extensions || {}).DAH_anime_normalize, (ext) =>
-  //   ext.postProcess?.(context, results),
-  // );
-  // ifDefined((context.extensions || {}).DAH_serialize_json, (ext) =>
-  //   ext.serialize?.(data, results),
-  // );
+  // No extension hooks remain; processing is purely the core algorithm.
 
   return results;
 }
