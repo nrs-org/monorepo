@@ -48,6 +48,14 @@ export interface Extension {
     entryId: Id,
     result: Result,
   ) => Result | Promise<Result> | undefined;
+
+  // Optional per-extension ordering hint. When present this function is
+  // called with the list of enabled extension names and the hook being
+  // ordered and should return the list of extension names that MUST run
+  // after this extension for that hook. This allows extension authors to
+  // express ordering constraints that are independent of `dependencies()`.
+  // The core will aggregate these hints when computing final ordering.
+  mustRunAfter?: (extensions: string[], hook: HookName) => string[];
 }
 
 // Given a map of enabled extensions and a target extension name + hook,
