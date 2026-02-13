@@ -35,6 +35,16 @@
         "@nrs-org/core": "*",
       },
     },
+    "packages/ext-dah-entry-id-impl": {
+      "name": "@nrs-org/ext-dah-entry-id-impl",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/bun": "^1.3.9",
+      },
+      "peerDependencies": {
+        "@nrs-org/core": "*",
+      },
+    },
     "packages/ext-dah-entry-title": {
       "name": "@nrs-org/ext-dah-entry-title",
       "version": "0.1.0",
@@ -78,6 +88,8 @@
     "@nrs-org/core": ["@nrs-org/core@workspace:packages/core"],
 
     "@nrs-org/ext-dah-entry-bestgirl": ["@nrs-org/ext-dah-entry-bestgirl@workspace:packages/ext-dah-entry-bestgirl"],
+
+    "@nrs-org/ext-dah-entry-id-impl": ["@nrs-org/ext-dah-entry-id-impl@workspace:packages/ext-dah-entry-id-impl"],
 
     "@nrs-org/ext-dah-entry-title": ["@nrs-org/ext-dah-entry-title@workspace:packages/ext-dah-entry-title"],
 

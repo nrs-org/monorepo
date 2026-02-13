@@ -1,1 +1,2 @@
-../../eslint.config.mjs
+// @ts-check
+export { default } from "../../eslint.config.mjs";
