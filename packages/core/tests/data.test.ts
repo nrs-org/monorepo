@@ -7,7 +7,7 @@ describe("data utils", () => {
       { id: "a", DAH_meta: {} },
       { id: "b", DAH_meta: {} },
     ];
-    const m = indexEntry(items as any);
+    const m = indexEntry(items);
     expect(m.get("a")?.id).toBe("a");
     expect(m.get("b")?.id).toBe("b");
   });

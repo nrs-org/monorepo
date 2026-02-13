@@ -9,13 +9,19 @@ export class Vector {
   add(other: Vector) {
     if (this.data.length !== other.data.length)
       throw new Error("dimension mismatch");
-    for (let i = 0; i < this.data.length; ++i) this.data[i] += other.data[i];
+    for (let i = 0; i < this.data.length; ++i)
+      this.data[i] = this.get(i) + other.get(i);
   }
   mul(scalar: number) {
     return new Vector(this.data.map((x) => x * scalar));
   }
   toJSON() {
     return this.data;
+  }
+  get(index: number) {
+    const value = this.data[index];
+    if (value === undefined) throw new Error("index out of bounds");
+    return value;
   }
 }
 
@@ -70,13 +76,21 @@ export class DiagonalMatrix {
     return new DiagonalMatrix(this.data);
   }
   get(i: number, j: number) {
-    return i === j ? this.data[i] : 0.0;
+    if (i !== j) return 0.0;
+    const value = this.data[i];
+    if (value === undefined) throw new Error("index out of bounds");
+    return value;
+  }
+  getDiagonal(i: number) {
+    return this.get(i, i);
   }
   add(matrix: Matrix) {
     if (matrix instanceof ScalarMatrix)
       return new DiagonalMatrix(this.data.map((x) => x + matrix.data));
     if (matrix instanceof DiagonalMatrix)
-      return new DiagonalMatrix(this.data.map((x, i) => x + matrix.data[i]));
+      return new DiagonalMatrix(
+        this.data.map((x, i) => x + matrix.getDiagonal(i)),
+      );
     return matrix.add(this);
   }
   mul<T extends Matrix | Vector>(rhs: T): T {
@@ -88,18 +102,22 @@ export class DiagonalMatrix {
     return new DiagonalMatrix(this.data.map((x) => x * f));
   }
   matvecmul(v: Vector) {
-    return new Vector(v.data.map((x, i) => x * this.data[i]));
+    return new Vector(v.data.map((x, i) => x * this.getDiagonal(i)));
   }
   matmul(matrix: Matrix) {
     if (matrix instanceof ScalarMatrix) return matrix.mul(this);
     if (matrix instanceof DiagonalMatrix)
-      return new DiagonalMatrix(this.data.map((x, i) => x * matrix.data[i]));
+      return new DiagonalMatrix(
+        this.data.map((x, i) => x * matrix.getDiagonal(i)),
+      );
     const n = this.data.length;
-    return new RegularMatrix(matrix.data.map((x, i) => x * this.data[i % n]));
+    return new RegularMatrix(
+      matrix.data.map((x, i) => x * this.getDiagonal(i % n)),
+    );
   }
   clamp01() {
     for (let i = 0; i < this.data.length; ++i)
-      this.data[i] = Math.min(1.0, this.data[i]);
+      this.data[i] = Math.min(1.0, this.getDiagonal(i));
   }
   toJSON() {
     return this.data;
@@ -115,7 +133,12 @@ export class RegularMatrix {
     return new RegularMatrix(this.data);
   }
   get(i: number, j: number) {
-    return this.data[i * this.dimensions() + j];
+    return this.getRaw(i * this.dimensions() + j);
+  }
+  getRaw(i: number) {
+    const value = this.data[i];
+    if (value === undefined) throw new Error("index out of bounds");
+    return value;
   }
   dimensions() {
     const n = Math.floor(Math.sqrt(this.data.length));
@@ -133,17 +156,18 @@ export class RegularMatrix {
       const n = this.dimensions();
       return new RegularMatrix(
         this.data.map(
-          (x, i) => x + (i % (n + 1) === 0 ? matrix.data[i / (n + 1)] : 0),
+          (x, i) =>
+            x + (i % (n + 1) === 0 ? matrix.getDiagonal(i / (n + 1)) : 0),
         ),
       );
     }
     return new RegularMatrix(
-      this.data.map((x, i) => x + (matrix as RegularMatrix).data[i]),
+      this.data.map((x, i) => x + (matrix as RegularMatrix).getRaw(i)),
     );
   }
   clamp01() {
     for (let i = 0; i < this.data.length; ++i)
-      this.data[i] = Math.min(1.0, this.data[i]);
+      this.data[i] = Math.min(1.0, this.getRaw(i));
   }
   mul<T extends Matrix | Vector>(rhs: T): T {
     return (
@@ -159,7 +183,7 @@ export class RegularMatrix {
       vector.data.map((x, i) => {
         let sum = 0.0;
         for (let j = 0; j < n; ++j) {
-          sum += this.data[i * n + j] * x;
+          sum += this.get(i, j) * x;
         }
         return sum;
       }),
@@ -170,14 +194,16 @@ export class RegularMatrix {
     const n = this.dimensions();
     if (matrix instanceof DiagonalMatrix)
       return new RegularMatrix(
-        this.data.map((x, i) => x * matrix.data[Math.floor(i / n)]),
+        this.data.map((x, i) => x * matrix.getDiagonal(Math.floor(i / n))),
       );
     const result = new RegularMatrix(new Array<number>(n * n).fill(0));
     for (let i = 0; i < n; ++i)
-      for (let j = 0; j < n; ++j)
+      for (let j = 0; j < n; ++j) {
+        let total = 0;
         for (let k = 0; k < n; ++k)
-          result.data[i * n + j] +=
-            this.data[k * n + j] * (matrix as RegularMatrix).data[i * n + k];
+          total += this.get(i, k) * (matrix as RegularMatrix).get(k, j);
+        result.data[i * n + j] = total;
+      }
     return result;
   }
   toJSON() {

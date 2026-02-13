@@ -20,10 +20,10 @@ describe("processContext simple", () => {
       impacts: [impact],
       relations: [],
     };
-    const res = processContext(ctx, data as any);
+    const res = processContext(ctx, data);
     const r = res.get("e1");
     expect(r).toBeDefined();
-    expect(r!.overallVector.data.length).toBe(2);
-    expect(r!.overallVector.data.every(Number.isFinite)).toBe(true);
+    expect(r?.overallVector.data.length).toBe(2);
+    expect(r?.overallVector.data.every(Number.isFinite)).toBe(true);
   });
 });

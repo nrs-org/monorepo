@@ -1,29 +1,27 @@
 import type { Matrix, Vector } from "./math";
 
-export interface Meta {
-  _placeholder?: never;
-}
 export type Id = string;
+export type Meta = Record<string, unknown>;
 
-export interface HasMeta<M extends Meta> {
-  DAH_meta: M;
+export interface HasMeta {
+  DAH_meta: Meta;
 }
 
-export interface EntryMeta extends Meta {}
-export interface ImpactMeta extends Meta {}
-export interface RelationMeta extends Meta {}
-export interface ResultMeta extends Meta {}
+export type EntryMeta = Meta;
+export type ImpactMeta = Meta;
+export type RelationMeta = Meta;
+export type ResultMeta = Meta;
 
-export interface Entry extends HasMeta<EntryMeta> {
+export interface Entry extends HasMeta {
   id: Id;
 }
 
-export interface Impact extends HasMeta<ImpactMeta> {
+export interface Impact extends HasMeta {
   contributors: Map<Id, Matrix>;
   score: Vector;
 }
 
-export interface Relation extends HasMeta<RelationMeta> {
+export interface Relation extends HasMeta {
   contributors: Map<Id, Matrix>;
   references: Map<Id, Matrix>;
 }
@@ -34,7 +32,7 @@ export interface Data {
   relations: Relation[];
 }
 
-export interface Result extends HasMeta<ResultMeta> {
+export interface Result extends HasMeta {
   positiveScore: Vector;
   negativeScore: Vector;
   overallVector: Vector;

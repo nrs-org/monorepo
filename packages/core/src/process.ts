@@ -1,8 +1,19 @@
-import type { Data, Id, Result as ResultType } from "./data";
-import { Vector, DiagonalMatrix, RegularMatrix, ScalarMatrix } from "./math";
-import { ifDefined, assert } from "./utils";
+import type { Data, Id, Result } from "./data";
+import {
+  Vector,
+  DiagonalMatrix,
+  RegularMatrix,
+  ScalarMatrix,
+  type Matrix,
+} from "./math";
+import { assert } from "./utils";
 import { Graph, alg } from "graphlib";
-import { identity, lusolve, matrix as mathjsMatrix } from "mathjs";
+import {
+  identity,
+  lusolve,
+  matrix as mathjsMatrix,
+  type Matrix as MathJsMatrix,
+} from "mathjs";
 
 export interface ContextAPI {
   newVector(data: number[]): Vector;
@@ -62,12 +73,10 @@ export function newZeroVector(context: Context): Vector {
   return context.factorScoreCombineWeight.mul(0.0);
 }
 
-export interface Result extends ResultType {}
-
 function embed(context: Context, vector: Vector): Vector {
   const v = new Vector(
     vector.data.map((v, i) =>
-      Math.pow(v, 1 / context.factorScoreCombineWeight.data[i]),
+      Math.pow(v, 1 / context.factorScoreCombineWeight.get(i)),
     ),
   );
   assert(
@@ -80,7 +89,7 @@ function embed(context: Context, vector: Vector): Vector {
 function unembed(context: Context, vector: Vector): Vector {
   return new Vector(
     vector.data.map((v, i) =>
-      Math.pow(v, context.factorScoreCombineWeight.data[i]),
+      Math.pow(v, context.factorScoreCombineWeight.get(i)),
     ),
   );
 }
@@ -92,10 +101,9 @@ function constScoreCalc(
 ): Map<Id, Vector> {
   const signedRelu = (vector: Vector) =>
     new Vector(vector.data.map((v) => Math.max(0, sign * v)));
-  const impactEmbeddedScores: Vector[] = [];
-  for (let i = 0; i < data.impacts.length; i++) {
-    impactEmbeddedScores[i] = embed(context, signedRelu(data.impacts[i].score));
-  }
+  const impactEmbeddedScores = data.impacts.map((impact) => {
+    return embed(context, signedRelu(impact.score));
+  });
 
   const impactScores = new Map<Id, Vector>();
   for (const id of data.entries.keys())
@@ -103,8 +111,11 @@ function constScoreCalc(
 
   for (let i = 0; i < data.impacts.length; i++) {
     const impact = data.impacts[i];
+    const embeddedScore = impactEmbeddedScores[i];
+    // should not happen but eslint complains about this
+    if (impact === undefined || embeddedScore === undefined) continue;
     for (const [entry, weight] of impact.contributors) {
-      impactScores.get(entry)?.add(weight.mul(impactEmbeddedScores[i]));
+      impactScores.get(entry)?.add(weight.mul(embeddedScore));
     }
   }
 
@@ -126,8 +137,9 @@ function topoSortEntries(_context: Context, data: Data): Id[][] {
 
   const sccs = alg.tarjan(entryGraph);
   const idToScc = new Map<Id, number>();
-  for (let i = 0; i < sccs.length; i++)
-    for (const id of sccs[i]) idToScc.set(id, i);
+  sccs.forEach((scc, i) => {
+    for (const id of scc) idToScc.set(id, i);
+  });
 
   const sccGraph = new Graph({ directed: true });
   for (let i = 0; i < sccs.length; i++) sccGraph.setNode(i.toString());
@@ -145,29 +157,40 @@ function topoSortEntries(_context: Context, data: Data): Id[][] {
   }
 
   const order = alg.topsort(sccGraph);
-  return order.map((id) => sccs[parseInt(id)]);
+  return order.map((id) => {
+    const idx = parseInt(id);
+    const scc = sccs[idx];
+    if (scc === undefined) throw new Error("SCC not found for id: " + id);
+    return scc;
+  });
 }
 
 function createRelationMaps(
   relations:
-    | (ResultType & {
+    | (Result & {
         contributors?: Map<Id, Matrix>;
         references?: Map<Id, Matrix>;
       })[]
-    | any[],
+    | unknown[],
 ): Map<Id, Map<Id, Matrix>> {
   const relationMaps = new Map<Id, Map<Id, Matrix>>();
   const addRelation = (contrib: Id, ref: Id, matrix: Matrix) => {
-    if (!relationMaps.has(contrib))
-      relationMaps.set(contrib, new Map<Id, Matrix>());
-    const existingMatrix = relationMaps.get(contrib)!.get(ref);
-    if (existingMatrix === undefined)
-      relationMaps.get(contrib)!.set(ref, matrix);
-    else
-      relationMaps.get(contrib)!.set(ref, existingMatrix.add(matrix) as Matrix);
+    let map = relationMaps.get(contrib);
+    if (map === undefined) {
+      map = new Map<Id, Matrix>();
+      relationMaps.set(contrib, map);
+    }
+    const existingMatrix = map.get(ref);
+    map.set(
+      ref,
+      existingMatrix === undefined ? matrix : existingMatrix.add(matrix),
+    );
   };
 
-  for (const relation of relations) {
+  for (const relation of relations as {
+    contributors: Map<Id, Matrix>;
+    references: Map<Id, Matrix>;
+  }[]) {
     for (const [contrib, contribWeight] of relation.contributors) {
       for (const [ref, refWeight] of relation.references) {
         const matrix = contribWeight.mul(refWeight) as Matrix;
@@ -179,49 +202,45 @@ function createRelationMaps(
   return relationMaps;
 }
 
-export function processContext(
-  context: Context,
-  data: Data,
-): Map<Id, ResultType> {
-  ifDefined((context.extensions || {}).DAH_entry_roles, (e: any) =>
-    e.preprocessData?.(context, data),
-  );
+export function processContext(context: Context, data: Data): Map<Id, Result> {
+  // ifDefined((context.extensions || {}).DAH_entry_roles, (e) =>
+  //   e.preprocessData?.(context, data),
+  // );
 
   const positiveConstScores = constScoreCalc(context, data, 1.0);
   const negativeConstScores = constScoreCalc(context, data, -1.0);
   const entrySccs = topoSortEntries(context, data);
 
   const embeddedTotalScores = new Map<Id, [Vector, Vector]>();
-  const results = new Map<Id, ResultType>();
+  const results = new Map<Id, Result>();
 
   const relations = createRelationMaps(data.relations);
 
   for (const entryScc of entrySccs) {
     const idToIndexMap = new Map<Id, number>();
-    for (let i = 0; i < entryScc.length; i++) idToIndexMap.set(entryScc[i], i);
+    entryScc.forEach((id, i) => idToIndexMap.set(id, i));
 
     const N = context.factorScoreCombineWeight.data.length;
     const size = N * entryScc.length;
-    const equationMatrix: any = identity(size);
+    const equationMatrix: MathJsMatrix = identity(size) as MathJsMatrix;
     const subAssign = (i: number, j: number, amt: number) => {
       equationMatrix.set([i, j], equationMatrix.get([i, j]) - amt);
     };
 
-    for (let i = 0; i < entryScc.length; i++) {
-      const entryId = entryScc[i];
+    entryScc.forEach((entryId, i) => {
       const refs = relations.get(entryId);
-      if (refs === undefined) continue;
+      if (refs === undefined) return;
 
       for (const [ref, refWeight] of refs) {
         const embeddedRefScore = embeddedTotalScores.get(ref);
         if (embeddedRefScore !== undefined) {
           const [posRef, negRef] = embeddedRefScore;
           positiveConstScores
-            .get(entryId)!
-            .add(refWeight.mul(posRef) as Vector);
+            .get(entryId)
+            ?.add(refWeight.mul(posRef) as Vector);
           negativeConstScores
-            .get(entryId)!
-            .add(refWeight.mul(negRef) as Vector);
+            .get(entryId)
+            ?.add(refWeight.mul(negRef) as Vector);
         } else {
           const j = entryScc.indexOf(ref);
           assert(j >= 0);
@@ -232,33 +251,32 @@ export function processContext(
             }
         }
       }
-    }
+    });
 
-    const equationRhs: number[][] = [
-      new Array<number>(size).fill(0),
-      new Array<number>(size).fill(0),
-    ];
-    for (let i = 0; i < entryScc.length; ++i) {
-      const entryId = entryScc[i];
-      const positiveConst = positiveConstScores.get(entryId)!;
-      const negativeConst = negativeConstScores.get(entryId)!;
+    const equationRhsPos = new Array<number>(size).fill(0);
+    const equationRhsNeg = new Array<number>(size).fill(0);
+
+    entryScc.forEach((entryId, i) => {
+      const positiveConst = positiveConstScores.get(entryId);
+      const negativeConst = negativeConstScores.get(entryId);
+      if (positiveConst === undefined || negativeConst === undefined) return;
       for (let j = 0; j < N; ++j) {
-        equationRhs[0][i * N + j] = positiveConst.data[j];
-        equationRhs[1][i * N + j] = negativeConst.data[j];
+        equationRhsPos[i * N + j] = positiveConst.data[j] ?? 0;
+        equationRhsNeg[i * N + j] = negativeConst.data[j] ?? 0;
       }
-    }
+    });
 
     const positiveScores = lusolve(
       equationMatrix,
-      mathjsMatrix(equationRhs[0]),
+      mathjsMatrix(equationRhsPos),
     );
     const negativeScores = lusolve(
       equationMatrix,
-      mathjsMatrix(equationRhs[1]),
+      mathjsMatrix(equationRhsNeg),
     );
 
-    for (let i = 0; i < entryScc.length; ++i) {
-      const result: any = {
+    entryScc.forEach((entryId, i) => {
+      const result: Result = {
         positiveScore: newZeroVector(context),
         negativeScore: newZeroVector(context),
         overallVector: newZeroVector(context),
@@ -269,7 +287,7 @@ export function processContext(
         result.negativeScore.data[j] = negativeScores.get([i * N + j, 0]);
       }
 
-      embeddedTotalScores.set(entryScc[i], [
+      embeddedTotalScores.set(entryId, [
         result.positiveScore,
         result.negativeScore,
       ]);
@@ -278,19 +296,19 @@ export function processContext(
       result.overallVector.add(result.positiveScore);
       result.overallVector.add(result.negativeScore.mul(-1));
 
-      results.set(entryScc[i], result);
-    }
+      results.set(entryId, result);
+    });
   }
 
-  ifDefined((context.extensions || {}).DAH_overall_score, (ext: any) =>
-    ext.postProcess?.(context, results),
-  );
-  ifDefined((context.extensions || {}).DAH_anime_normalize, (ext: any) =>
-    ext.postProcess?.(context, results),
-  );
-  ifDefined((context.extensions || {}).DAH_serialize_json, (ext: any) =>
-    ext.serialize?.(data, results),
-  );
+  // ifDefined((context.extensions || {}).DAH_overall_score, (ext) =>
+  //   ext.postProcess?.(context, results),
+  // );
+  // ifDefined((context.extensions || {}).DAH_anime_normalize, (ext) =>
+  //   ext.postProcess?.(context, results),
+  // );
+  // ifDefined((context.extensions || {}).DAH_serialize_json, (ext) =>
+  //   ext.serialize?.(data, results),
+  // );
 
   return results;
 }
