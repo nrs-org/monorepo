@@ -301,7 +301,7 @@ export async function processContext(
       result.overallVector.add(result.negativeScore.mul(-1));
 
       // run afterEntryResult hooks for this entry in the computed order
-      runExtensionHooks(
+      await runExtensionHooks(
         "afterEntryResult",
         async (ext) => {
           const r = await ext.afterEntryResult?.(context, entryId, result);
@@ -315,7 +315,7 @@ export async function processContext(
   }
 
   // run postProcess hooks in computed order; allow replacement of results
-  runExtensionHooks(
+  await runExtensionHooks(
     "postProcess",
     async (ext) => {
       const r = await ext.postProcess?.(context, results);
@@ -324,8 +324,8 @@ export async function processContext(
     enabled,
   );
 
-  // run report hooks (fire-and-forget return values)
-  runExtensionHooks(
+  // run report hooks
+  await runExtensionHooks(
     "report",
     async (ext) => {
       await ext.report?.(data, results);
