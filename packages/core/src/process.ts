@@ -1,4 +1,4 @@
-import type { Data, Id, Result } from "./data";
+import type { Data, Id, Relation, Result } from "./data";
 import type { Extension, HookName } from "./extension";
 import { computeHookOrder } from "./extension";
 import {
@@ -165,18 +165,11 @@ function topoSortEntries(_context: Context, data: Data): Id[][] {
     const idx = parseInt(id);
     const scc = sccs[idx];
     assert(scc !== undefined, "SCC not found for id: " + id);
-    return scc as Id[];
+    return scc;
   });
 }
 
-function createRelationMaps(
-  relations:
-    | (Result & {
-        contributors?: Map<Id, Matrix>;
-        references?: Map<Id, Matrix>;
-      })[]
-    | unknown[],
-): Map<Id, Map<Id, Matrix>> {
+function createRelationMaps(relations: Relation[]): Map<Id, Map<Id, Matrix>> {
   const relationMaps = new Map<Id, Map<Id, Matrix>>();
   const addRelation = (contrib: Id, ref: Id, matrix: Matrix) => {
     let map = relationMaps.get(contrib);
@@ -191,13 +184,10 @@ function createRelationMaps(
     );
   };
 
-  for (const relation of relations as {
-    contributors: Map<Id, Matrix>;
-    references: Map<Id, Matrix>;
-  }[]) {
+  for (const relation of relations) {
     for (const [contrib, contribWeight] of relation.contributors) {
       for (const [ref, refWeight] of relation.references) {
-        const matrix = contribWeight.mul(refWeight) as Matrix;
+        const matrix = contribWeight.mul(refWeight);
         addRelation(contrib, ref, matrix);
       }
     }
@@ -262,12 +252,8 @@ export async function processContext(
         const embeddedRefScore = embeddedTotalScores.get(ref);
         if (embeddedRefScore !== undefined) {
           const [posRef, negRef] = embeddedRefScore;
-          positiveConstScores
-            .get(entryId)
-            ?.add(refWeight.mul(posRef) as Vector);
-          negativeConstScores
-            .get(entryId)
-            ?.add(refWeight.mul(negRef) as Vector);
+          positiveConstScores.get(entryId)?.add(refWeight.mul(posRef));
+          negativeConstScores.get(entryId)?.add(refWeight.mul(negRef));
         } else {
           const j = entryScc.indexOf(ref);
           assert(j >= 0);
