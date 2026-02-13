@@ -6,7 +6,6 @@ import { ScalarMatrix } from "../src/math";
 describe("processContext simple", () => {
   it("runs for a single-entry dataset", async () => {
     const ctx = newContext({
-      extensions: {},
       factorScoreCombineWeight: new Vector([1, 1]),
     });
     const entry = { id: "e1", DAH_meta: {} };

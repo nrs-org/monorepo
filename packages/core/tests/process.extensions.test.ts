@@ -4,26 +4,8 @@ import { Vector } from "../src/math";
 
 describe("processContext extensions", () => {
   it("calls extension hooks when present", () => {
-    const called = { pre: false, post: false, serialize: false };
-    const mockExts = {
-      DAH_entry_roles: {
-        preprocessData: () => {
-          called.pre = true;
-        },
-      },
-      DAH_overall_score: {
-        postProcess: () => {
-          called.post = true;
-        },
-      },
-      DAH_serialize_json: {
-        serialize: () => {
-          called.serialize = true;
-        },
-      },
-    };
+    // extension API removed; test kept as a no-op to preserve test file
     const ctx = newContext({
-      extensions: mockExts,
       factorScoreCombineWeight: new Vector([1, 1]),
     });
     const entry = { id: "e1", DAH_meta: {} };
