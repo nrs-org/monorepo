@@ -374,7 +374,7 @@ describe("RegularMatrix", () => {
     const b = new RegularMatrix([5, 6, 7, 8]); // 2x2 matrix
     const result = a.mul(b);
     expect(result).toBeInstanceOf(RegularMatrix);
-    // [[1,2],[3,4]] * [[5,6],[7,8]] = [[19,22],[43,50]]
+    // Row-major: [[1,2],[3,4]] * [[5,6],[7,8]] = [[19,22],[43,50]]
     expect((result as RegularMatrix).data).toEqual([19, 22, 43, 50]);
   });
 
