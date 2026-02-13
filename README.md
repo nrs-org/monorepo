@@ -2,7 +2,7 @@
 
 [![CI Tests](https://github.com/nrs-org/monorepo/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/nrs-org/monorepo/actions/workflows/ci-tests.yml)
 [![Pre-commit Lints](https://github.com/nrs-org/monorepo/actions/workflows/pre-commit-lints.yml/badge.svg)](https://github.com/nrs-org/monorepo/actions/workflows/pre-commit-lints.yml)
-[![codecov](https://codecov.io/gh/nrs-org/monorepo/graph/badge.svg?token=CODECOV_TOKEN)](https://codecov.io/gh/nrs-org/monorepo)
+[![codecov](https://codecov.io/gh/nrs-org/monorepo/graph/badge.svg)](https://codecov.io/gh/nrs-org/monorepo)
 
 This repository is the official implementation monorepo for the NRS project
 (see the [specifications](https://github.com/nrs-org/nrs)). Its purpose is to
