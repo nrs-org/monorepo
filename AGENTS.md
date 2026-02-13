@@ -1,5 +1,13 @@
 Agent Guidelines for this repository
 
+IMPORTANT
+
+- To initialize a new package, run `bun init -y`.
+- Replace generated `tsconfig.json` and `eslint.config.mjs` by symlinks to those
+  file in root dir.
+- To add dependencies, don't manually edit the `package.json` file. Run `bun add
+...` instead.
+
 Purpose
 
 - This monorepo collects packages and tools that implement the NRS specification
