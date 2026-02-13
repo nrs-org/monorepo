@@ -14,30 +14,18 @@ export interface Extension {
   // Optional dependency declaration by extension name.
   dependencies?: () => string[];
 
+  // Optional per-extension ordering hint. When present this function is
+  // called with the list of enabled extension names and the hook being
+  // ordered and should return the list of extension names that MUST run
+  // after this extension for that hook. This allows extension authors to
+  // express ordering constraints that are independent of `dependencies()`.
+  // The core will aggregate these hints when computing final ordering.
+  mustRunAfter?: (extensions: string[], hook: HookName) => string[];
+
   // Called before any processing begins. May mutate `data` or return a
   // replacement `Data` object. Async allowed.
   preprocessData?: (
     context: Context,
-    data: Data,
-  ) => Data | Promise<Data> | undefined;
-
-  // Called after all results are computed. May mutate `results` or return a
-  // replacement `Map<Id, Result>`. Async allowed.
-  postProcess?: (
-    context: Context,
-    results: Map<Id, Result>,
-  ) => Map<Id, Result> | Promise<Map<Id, Result>> | undefined;
-
-  // Optional reporting/finalization hook that can produce artifacts from
-  // `data` and `results` (e.g. JSON, diagnostics). Return value is
-  // intentionally unconstrained; core will not rely on it.
-  report?: (data: Data, results: Map<Id, Result>) => unknown | Promise<unknown>;
-
-  // Called before solving each strongly-connected component (SCC). May
-  // mutate `data` or return a replacement `Data` for subsequent steps.
-  beforeSolveScc?: (
-    context: Context,
-    scc: Id[],
     data: Data,
   ) => Data | Promise<Data> | undefined;
 
@@ -49,13 +37,17 @@ export interface Extension {
     result: Result,
   ) => Result | Promise<Result> | undefined;
 
-  // Optional per-extension ordering hint. When present this function is
-  // called with the list of enabled extension names and the hook being
-  // ordered and should return the list of extension names that MUST run
-  // after this extension for that hook. This allows extension authors to
-  // express ordering constraints that are independent of `dependencies()`.
-  // The core will aggregate these hints when computing final ordering.
-  mustRunAfter?: (extensions: string[], hook: HookName) => string[];
+  // Called after all results are computed. May mutate `results` or return a
+  // replacement `Map<Id, Result>`. Async allowed.
+  postProcess?: (
+    context: Context,
+    results: Map<Id, Result>,
+  ) => Map<Id, Result> | Promise<Map<Id, Result>> | undefined;
+
+  // Optional reporting/finalization hook that can produce artifacts from
+  // `data` and `results` (e.g. JSON, diagnostics). Return value is
+  // intentionally unconstrained; core will not rely on it.
+  report?: (data: Data, results: Map<Id, Result>) => void | Promise<void>;
 }
 
 // Given a map of enabled extensions and a target extension name + hook,
@@ -65,28 +57,29 @@ export interface Extension {
 import { Graph, alg } from "graphlib";
 
 export function computePrereqs(
-  enabled: Record<string, Extension | undefined>,
+  enabled: Record<string, Extension>,
   target: string,
-  // hookName reserved for future hook-aware ordering rules
-  _hookName?: keyof Extension,
+  hookName: HookName,
 ): string[] {
+  // Build graph from all enabled extensions' mustRunAfter hints. We query
+  // every extension for the given hook, add edges `name -> other` for each
+  // hinted `other`, ignore hints about disabled extensions, then compute the
+  // prerequisites for `target` via a topological sort. If a cycle exists we
+  // throw an error rather than attempting a fallback ordering.
   const g = new Graph({ directed: true });
-  // consume parameter for future-proofing so linters don't complain
-  void _hookName;
-  // add nodes for all enabled
-  for (const name of Object.keys(enabled)) g.setNode(name);
-  // add edges dep -> name
+  const names = Object.keys(enabled);
+  for (const name of names) g.setNode(name);
   for (const [name, ext] of Object.entries(enabled)) {
-    if (!ext || typeof ext.dependencies !== "function") continue;
-    for (const dep of ext.dependencies()) {
-      if (!g.hasNode(dep)) continue; // ignore external deps not enabled
-      g.setEdge(dep, name);
+    const after = ext.mustRunAfter?.(names, hookName) ?? [];
+    for (const other of after) {
+      if (!g.hasNode(other)) continue; // ignore hints about disabled extensions
+      g.setEdge(name, other);
     }
   }
 
   if (!g.hasNode(target)) return [];
 
-  // collect nodes that have a path to target
+  // collect nodes that have a path to target (i.e. must run before target)
   const preds = new Set<string>();
   const stack = [target];
   while (stack.length > 0) {
@@ -101,77 +94,61 @@ export function computePrereqs(
     }
   }
 
-  // topologically sort the subgraph induced by preds and return in order
+  if (preds.size === 0) return [];
+
+  // build subgraph induced by preds
   const sub = new Graph({ directed: true });
-  for (const n of preds) sub.setNode(n);
+  const predNames = Array.from(preds);
+  for (const n of predNames) sub.setNode(n);
   for (const e of g.edges() || []) {
     if (preds.has(e.v as string) && preds.has(e.w as string))
       sub.setEdge(e.v, e.w);
   }
-  try {
-    return alg.topsort(sub).map((n) => n.toString());
-  } catch {
-    throw new Error(`Extension dependency cycle detected for target ${target}`);
-  }
-}
 
-/**
- * Given an enabled extension map, a target extension name and a hook name,
- * return the list of enabled extension names that must run after the target
- * for the given hook. This is computed from the transitive dependency graph
- * (i.e. nodes reachable from the target). The returned list is topologically
- * ordered (dependencies earlier), and does not include the target itself.
- */
-export function mustRunAfter(
-  enabled: Record<string, Extension | undefined>,
-  target: string,
-  _hook: HookName,
-): string[] {
-  // Note: _hook currently unused but accepted for future hook-specific rules
-  void _hook;
-
-  const g = new Graph({ directed: true });
-  for (const name of Object.keys(enabled)) g.setNode(name);
-  for (const [name, ext] of Object.entries(enabled)) {
-    if (!ext || typeof ext.dependencies !== "function") continue;
-    for (const dep of ext.dependencies()) {
-      if (!g.hasNode(dep)) continue;
-      g.setEdge(dep, name);
-    }
-  }
-
-  if (!g.hasNode(target)) return [];
-
-  // collect nodes reachable from target (excluding target)
-  const succs = new Set<string>();
-  const stack = [target];
-  while (stack.length > 0) {
-    const cur = stack.pop() as string;
-    const out = g.outEdges(cur) || [];
-    for (const e of out) {
-      const w = e.w as string;
-      if (!succs.has(w)) {
-        succs.add(w);
-        stack.push(w);
-      }
-    }
-  }
-
-  if (succs.size === 0) return [];
-
-  // build subgraph induced by succs
-  const sub = new Graph({ directed: true });
-  for (const n of succs) sub.setNode(n);
-  for (const e of g.edges() || []) {
-    if (succs.has(e.v as string) && succs.has(e.w as string))
-      sub.setEdge(e.v, e.w);
-  }
-
+  // Strict topo sort: throw on cycles to signal invalid ordering hints.
   try {
     return alg.topsort(sub).map((n) => n.toString());
   } catch {
     throw new Error(
-      `Extension dependency cycle detected while computing mustRunAfter for ${target}`,
+      `cycle detected in extension ordering prerequisites for '${target}'`,
     );
+  }
+}
+
+// Compute a deterministic invocation order for a given hook across all
+// enabled extensions. Extensions that do not implement the hook are filtered
+// out of the returned list, but their ordering hints (mustRunAfter) still
+// influence the final order. This returns a stable ordering even when cycles
+// exist by falling back to a deterministic Kahn-like ordering.
+export function computeHookOrder(
+  enabled: Record<string, Extension | undefined>,
+  hook: HookName,
+): string[] {
+  // Build graph from all enabled extensions' mustRunAfter hints for this hook,
+  // then perform a strict topological sort. If a cycle exists we throw to
+  // indicate invalid ordering hints. The final result filters to only those
+  // extensions that actually implement the requested hook.
+  const g = new Graph({ directed: true });
+  const names = Object.keys(enabled);
+  for (const name of names) g.setNode(name);
+  for (const [name, ext] of Object.entries(enabled)) {
+    if (!ext) continue;
+    const after = ext.mustRunAfter?.(names, hook) ?? [];
+    for (const other of after) {
+      if (!g.hasNode(other)) continue; // ignore hints about disabled extensions
+      g.setEdge(name, other);
+    }
+  }
+
+  try {
+    const order = alg.topsort(g).map((n) => n.toString());
+    return order.filter((name) => {
+      const ext = enabled[name];
+      return (
+        !!ext && typeof (ext as Record<string, unknown>)[hook] === "function"
+      );
+    });
+  } catch {
+    throw new Error(`cycle detected in extension ordering for hook '${hook}'`);
   }
 }

@@ -1,4 +1,6 @@
 import type { Data, Id, Result } from "./data";
+import type { Extension, HookName } from "./extension";
+import { computeHookOrder } from "./extension";
 import {
   Vector,
   DiagonalMatrix,
@@ -25,10 +27,15 @@ export interface ContextAPI {
 export interface Context {
   factorScoreCombineWeight: Vector;
   api: ContextAPI;
+  // Optional enabled extensions map. Callers may provide extensions via
+  // `newContext({ ..., extensions })` to enable extension hooks during
+  // processing.
+  extensions?: Record<string, Extension>;
 }
 
 export interface ContextConfig {
   factorScoreCombineWeight?: Vector;
+  extensions?: Record<string, Extension>;
 }
 
 export function newContext(config: ContextConfig): Context {
@@ -43,6 +50,7 @@ export function newContext(config: ContextConfig): Context {
       newDiagonalMatrix: (d: number[]) => new DiagonalMatrix(d),
       newRegularMatrix: (d: number[]) => new RegularMatrix(d),
     },
+    extensions: config.extensions,
   };
 }
 
@@ -179,17 +187,37 @@ function createRelationMaps(
   return relationMaps;
 }
 
+async function runExtensionHooks(
+  hookName: HookName,
+  hookFn: (e: Extension) => Promise<void>,
+  extensions?: Record<string, Extension>,
+) {
+  if (extensions === undefined) return;
+  const order = computeHookOrder(extensions, hookName);
+  for (const name of order) {
+    const ext = extensions[name];
+    if (ext === undefined) continue;
+    await hookFn(ext);
+  }
+}
+
 export async function processContext(
   context: Context,
   data: Data,
 ): Promise<Map<Id, Result>> {
+  const embeddedTotalScores = new Map<Id, [Vector, Vector]>();
+  let results = new Map<Id, Result>();
+
+  const enabled = context.extensions ?? {};
+
+  await runExtensionHooks("preprocessData", async (ext) => {
+    const ret = await ext.preprocessData?.(context, data);
+    if (ret !== undefined) data = ret;
+  });
+
   const positiveConstScores = constScoreCalc(context, data, 1.0);
   const negativeConstScores = constScoreCalc(context, data, -1.0);
   const entrySccs = topoSortEntries(context, data);
-
-  const embeddedTotalScores = new Map<Id, [Vector, Vector]>();
-  const results = new Map<Id, Result>();
-
   const relations = createRelationMaps(data.relations);
 
   for (const entryScc of entrySccs) {
@@ -252,7 +280,7 @@ export async function processContext(
     );
 
     entryScc.forEach((entryId, i) => {
-      const result: Result = {
+      let result: Result = {
         positiveScore: newZeroVector(context),
         negativeScore: newZeroVector(context),
         overallVector: newZeroVector(context),
@@ -272,11 +300,38 @@ export async function processContext(
       result.overallVector.add(result.positiveScore);
       result.overallVector.add(result.negativeScore.mul(-1));
 
+      // run afterEntryResult hooks for this entry in the computed order
+      runExtensionHooks(
+        "afterEntryResult",
+        async (ext) => {
+          const r = await ext.afterEntryResult?.(context, entryId, result);
+          if (r !== undefined) result = r;
+        },
+        enabled,
+      );
+
       results.set(entryId, result);
     });
   }
 
-  // No extension hooks remain; processing is purely the core algorithm.
+  // run postProcess hooks in computed order; allow replacement of results
+  runExtensionHooks(
+    "postProcess",
+    async (ext) => {
+      const r = await ext.postProcess?.(context, results);
+      if (r !== undefined) results = r;
+    },
+    enabled,
+  );
+
+  // run report hooks (fire-and-forget return values)
+  runExtensionHooks(
+    "report",
+    async (ext) => {
+      await ext.report?.(data, results);
+    },
+    enabled,
+  );
 
   return results;
 }
