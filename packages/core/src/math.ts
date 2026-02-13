@@ -181,10 +181,10 @@ export class RegularMatrix {
   matvecmul(vector: Vector) {
     const n = this.dimensions();
     return new Vector(
-      vector.data.map((x, i) => {
+      vector.data.map((_, i) => {
         let sum = 0.0;
         for (let j = 0; j < n; ++j) {
-          sum += this.get(i, j) * x;
+          sum += this.get(i, j) * vector.data[j];
         }
         return sum;
       }),
@@ -195,7 +195,7 @@ export class RegularMatrix {
     const n = this.dimensions();
     if (matrix instanceof DiagonalMatrix)
       return new RegularMatrix(
-        this.data.map((x, i) => x * matrix.getDiagonal(Math.floor(i / n))),
+        this.data.map((x, i) => x * matrix.getDiagonal(i % n)),
       );
     const result = new RegularMatrix(new Array<number>(n * n).fill(0));
     for (let i = 0; i < n; ++i)
