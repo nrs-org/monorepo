@@ -1,3 +1,5 @@
+import { assert } from "./utils";
+
 export class Vector {
   data: number[];
   constructor(data: number[]) {
@@ -7,8 +9,7 @@ export class Vector {
     return new Vector(this.data);
   }
   add(other: Vector) {
-    if (this.data.length !== other.data.length)
-      throw new Error("dimension mismatch");
+    assert(this.data.length === other.data.length, "dimension mismatch");
     for (let i = 0; i < this.data.length; ++i)
       this.data[i] = this.get(i) + other.get(i);
   }
@@ -20,7 +21,7 @@ export class Vector {
   }
   get(index: number) {
     const value = this.data[index];
-    if (value === undefined) throw new Error("index out of bounds");
+    assert(value !== undefined, "index out of bounds");
     return value;
   }
 }
@@ -78,7 +79,7 @@ export class DiagonalMatrix {
   get(i: number, j: number) {
     if (i !== j) return 0.0;
     const value = this.data[i];
-    if (value === undefined) throw new Error("index out of bounds");
+    assert(value !== undefined, "index out of bounds");
     return value;
   }
   getDiagonal(i: number) {
@@ -137,12 +138,12 @@ export class RegularMatrix {
   }
   getRaw(i: number) {
     const value = this.data[i];
-    if (value === undefined) throw new Error("index out of bounds");
+    assert(value !== undefined, "index out of bounds");
     return value;
   }
   dimensions() {
     const n = Math.floor(Math.sqrt(this.data.length));
-    if (n * n !== this.data.length) throw new Error("invalid matrix size");
+    assert(n * n === this.data.length, "invalid matrix size");
     return n;
   }
   add(matrix: Matrix) {

@@ -40,8 +40,10 @@ export interface ContextConfig {
 
 export function newContext(config: ContextConfig): Context {
   const factorScoreCombineWeight = config.factorScoreCombineWeight;
-  if (!factorScoreCombineWeight)
-    throw new Error("factor score combine weight not specified");
+  assert(
+    factorScoreCombineWeight !== undefined,
+    "factor score combine weight not specified",
+  );
   return {
     factorScoreCombineWeight,
     api: {
@@ -145,8 +147,8 @@ function topoSortEntries(_context: Context, data: Data): Id[][] {
   return order.map((id) => {
     const idx = parseInt(id);
     const scc = sccs[idx];
-    if (scc === undefined) throw new Error("SCC not found for id: " + id);
-    return scc;
+    assert(scc !== undefined, "SCC not found for id: " + id);
+    return scc as Id[];
   });
 }
 
@@ -279,7 +281,9 @@ export async function processContext(
       mathjsMatrix(equationRhsNeg),
     );
 
-    entryScc.forEach((entryId, i) => {
+    for (let i = 0; i < entryScc.length; ++i) {
+      const entryId = entryScc[i];
+      if (entryId === undefined) continue;
       let result: Result = {
         positiveScore: newZeroVector(context),
         negativeScore: newZeroVector(context),
@@ -311,7 +315,7 @@ export async function processContext(
       );
 
       results.set(entryId, result);
-    });
+    }
   }
 
   // run postProcess hooks in computed order; allow replacement of results
