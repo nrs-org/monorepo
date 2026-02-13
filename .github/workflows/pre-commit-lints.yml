@@ -18,5 +18,8 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
 
+      - name: Install JS dependencies (bun)
+        run: nix develop --extra-experimental-features 'nix-command flakes' -c bun install
+
       - name: Run pre-commit lints
         run: nix develop --extra-experimental-features 'nix-command flakes' -c pre-commit run -a
