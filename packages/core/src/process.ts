@@ -212,10 +212,14 @@ export async function processContext(
 
   const enabled = context.extensions ?? {};
 
-  await runExtensionHooks("preprocessData", async (ext) => {
-    const ret = await ext.preprocessData?.(context, data);
-    if (ret !== undefined) data = ret;
-  });
+  await runExtensionHooks(
+    "preprocessData",
+    async (ext) => {
+      const ret = await ext.preprocessData?.(context, data);
+      if (ret !== undefined) data = ret;
+    },
+    enabled,
+  );
 
   const positiveConstScores = constScoreCalc(context, data, 1.0);
   const negativeConstScores = constScoreCalc(context, data, -1.0);
