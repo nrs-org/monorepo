@@ -180,7 +180,7 @@ export class RegularMatrix {
   matvecmul(vector: Vector) {
     const n = this.dimensions();
     return new Vector(
-      vector.data.map((x, i) => {
+      vector.data.map((_, i) => {
         let sum = 0.0;
         for (let j = 0; j < n; ++j) {
           sum += this.get(i, j) * vector.data[j];
