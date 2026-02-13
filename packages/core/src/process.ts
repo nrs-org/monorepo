@@ -17,6 +17,10 @@ import {
   type Matrix as MathJsMatrix,
 } from "mathjs";
 
+function implicitExtensions() {
+  return ["DAH_meta", "DAH_entry_id"];
+}
+
 export interface ContextAPI {
   newVector(data: number[]): Vector;
   newScalarMatrix(data: number): ScalarMatrix;
@@ -30,7 +34,7 @@ export interface Context {
   // Optional enabled extensions map. Callers may provide extensions via
   // `newContext({ ..., extensions })` to enable extension hooks during
   // processing.
-  extensions?: Record<string, Extension>;
+  extensions: Record<string, Extension>;
 }
 
 export interface ContextConfig {
@@ -44,6 +48,19 @@ export function newContext(config: ContextConfig): Context {
     factorScoreCombineWeight !== undefined,
     "factor score combine weight not specified",
   );
+  const extensions = config.extensions ?? {};
+  const availableExtensionNames = new Set<string>([
+    ...Object.keys(extensions),
+    ...implicitExtensions(),
+  ]);
+  for (const [extName, ext] of Object.entries(extensions)) {
+    for (const dep of ext.dependencies?.() ?? []) {
+      assert(
+        availableExtensionNames.has(dep),
+        `extension dependency "${dep}" of "${extName}" not found`,
+      );
+    }
+  }
   return {
     factorScoreCombineWeight,
     api: {
@@ -52,7 +69,7 @@ export function newContext(config: ContextConfig): Context {
       newDiagonalMatrix: (d: number[]) => new DiagonalMatrix(d),
       newRegularMatrix: (d: number[]) => new RegularMatrix(d),
     },
-    extensions: config.extensions,
+    extensions,
   };
 }
 
