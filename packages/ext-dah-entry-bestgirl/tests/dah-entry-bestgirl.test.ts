@@ -16,5 +16,8 @@ describe("ext-dah-entry-bestgirl", () => {
     expect(ext.getBestGirl(e.DAH_meta)).toBe("Yuno");
     // ensure value is stored directly on DAH_meta
     expect(e.DAH_meta.DAH_entry_bestGirl).toBe("Yuno");
+    ext.setBestGirl(e.DAH_meta, undefined);
+    expect(ext.getBestGirl(e.DAH_meta)).toBeUndefined();
+    expect(e.DAH_meta).not.toContainKey("DAH_entry_bestGirl");
   });
 });
