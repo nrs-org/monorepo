@@ -18,43 +18,16 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Run pre-commit hooks
-        uses: pre-commit/action@v4
-        with:
-          # run hooks against all files (mirrors previous behavior)
-          extra_args: --all-files
+      - name: Install dependencies
+        run: bun install
 
       - name: Run workspace tests and collect coverage
-        run: |
-          # Install workspace deps then try running tests from repo root.
-          # If root-level `bun test` isn't supported for the workspace, fall back
-          # to running tests in each package directory.
-          set -euo pipefail
-          bun install
-          # copy any local-only third_party into a hidden, ignored dir so CI doesn't commit it
-          if [ -d ./third_party ]; then
-            cp -a third_party ./.third_party
-            echo "Copied third_party -> .third_party (local-only)"
-          fi
-          if bun test --coverage --coverage-reporter=lcov; then
-            echo "Root workspace tests completed"
-          else
-            echo "Root-level tests failed or unsupported; running per-package tests"
-            STATUS=0
-            for d in packages/*; do
-              if [ -f "$d/package.json" ]; then
-                (cd "$d" && bun install && bun test --coverage --coverage-reporter=lcov) || STATUS=1
-              fi
-            done
-            exit $STATUS
-          fi
+        run: bun test --coverage --coverage-reporter=lcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          # try common locations for lcov outputs from workspace packages
-          files: |
-            coverage/lcov.info
-            packages/*/coverage/lcov.info
-          # fail the step if upload fails
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: nrs-org/monorepo
+          files: coverage/lcov.info
           fail_ci_if_error: true

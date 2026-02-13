@@ -4,3 +4,7 @@
 /.pre-commit-config.yaml
 # Temporary checkout directory for LLM agents
 /.temp_third_party
+
+# coverage outputs
+coverage
+*.lcov
