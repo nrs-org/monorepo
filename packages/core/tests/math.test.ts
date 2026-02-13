@@ -350,7 +350,7 @@ describe("RegularMatrix", () => {
     const v = new Vector([5, 6]);
     const result = m.mul(v);
     expect(result).toBeInstanceOf(Vector);
-    expect(result.data).toEqual([15, 42]);
+    expect(result.data).toEqual([17, 39]);
   });
 
   it("should multiply ScalarMatrix", () => {

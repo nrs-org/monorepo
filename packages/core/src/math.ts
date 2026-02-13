@@ -183,7 +183,7 @@ export class RegularMatrix {
       vector.data.map((x, i) => {
         let sum = 0.0;
         for (let j = 0; j < n; ++j) {
-          sum += this.get(i, j) * x;
+          sum += this.get(i, j) * vector.data[j];
         }
         return sum;
       }),
