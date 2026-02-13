@@ -3,6 +3,13 @@ import type { Context } from "./process";
 import type { Data, Id, Result } from "./data";
 
 // Single interface for all extensions. Keep it small and async-friendly.
+export type HookName =
+  | "preprocessData"
+  | "beforeSolveScc"
+  | "afterEntryResult"
+  | "postProcess"
+  | "report";
+
 export interface Extension {
   // Optional dependency declaration by extension name.
   dependencies?: () => string[];
@@ -97,5 +104,66 @@ export function computePrereqs(
     return alg.topsort(sub).map((n) => n.toString());
   } catch {
     throw new Error(`Extension dependency cycle detected for target ${target}`);
+  }
+}
+
+/**
+ * Given an enabled extension map, a target extension name and a hook name,
+ * return the list of enabled extension names that must run after the target
+ * for the given hook. This is computed from the transitive dependency graph
+ * (i.e. nodes reachable from the target). The returned list is topologically
+ * ordered (dependencies earlier), and does not include the target itself.
+ */
+export function mustRunAfter(
+  enabled: Record<string, Extension | undefined>,
+  target: string,
+  _hook: HookName,
+): string[] {
+  // Note: _hook currently unused but accepted for future hook-specific rules
+  void _hook;
+
+  const g = new Graph({ directed: true });
+  for (const name of Object.keys(enabled)) g.setNode(name);
+  for (const [name, ext] of Object.entries(enabled)) {
+    if (!ext || typeof ext.dependencies !== "function") continue;
+    for (const dep of ext.dependencies()) {
+      if (!g.hasNode(dep)) continue;
+      g.setEdge(dep, name);
+    }
+  }
+
+  if (!g.hasNode(target)) return [];
+
+  // collect nodes reachable from target (excluding target)
+  const succs = new Set<string>();
+  const stack = [target];
+  while (stack.length > 0) {
+    const cur = stack.pop() as string;
+    const out = g.outEdges(cur) || [];
+    for (const e of out) {
+      const w = e.w as string;
+      if (!succs.has(w)) {
+        succs.add(w);
+        stack.push(w);
+      }
+    }
+  }
+
+  if (succs.size === 0) return [];
+
+  // build subgraph induced by succs
+  const sub = new Graph({ directed: true });
+  for (const n of succs) sub.setNode(n);
+  for (const e of g.edges() || []) {
+    if (succs.has(e.v as string) && succs.has(e.w as string))
+      sub.setEdge(e.v, e.w);
+  }
+
+  try {
+    return alg.topsort(sub).map((n) => n.toString());
+  } catch {
+    throw new Error(
+      `Extension dependency cycle detected while computing mustRunAfter for ${target}`,
+    );
   }
 }
