@@ -28,7 +28,13 @@
             check-yaml.enable = true;
             end-of-file-fixer.enable = true;
             trim-trailing-whitespace.enable = true;
-            eslint.enable = true;
+            eslint = {
+              enable = true;
+              settings = {
+                binPath = "./node_modules/.bin/eslint";
+                extensions = "\\.(js|jsx|ts|tsx|mjs|mts)$";
+              };
+            };
             prettier.enable = true;
           };
         };
@@ -43,11 +49,15 @@
         {
           default = pkgs.mkShell {
             inherit shellHook;
-            buildInputs =
+            packages =
               enabledPackages
               ++ (with pkgs; [
                 bun
                 typescript-language-server
+                nixfmt-rfc-style
+                nixd
+
+                nodejs # needed for the eslint binary above
               ]);
           };
         }
