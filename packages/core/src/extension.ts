@@ -1,11 +1,11 @@
 // Lightweight Extension types for core processing
 import type { Context } from "./process";
 import type { Data, Id, Result } from "./data";
+import { Graph, alg } from "graphlib";
 
 // Single interface for all extensions. Keep it small and async-friendly.
 export type HookName =
   | "preprocessData"
-  | "beforeSolveScc"
   | "afterEntryResult"
   | "postProcess"
   | "report";
@@ -48,71 +48,6 @@ export interface Extension {
   // `data` and `results` (e.g. JSON, diagnostics). Return value is
   // intentionally unconstrained; core will not rely on it.
   report?: (data: Data, results: Map<Id, Result>) => void | Promise<void>;
-}
-
-// Given a map of enabled extensions and a target extension name + hook,
-// compute the list of extension names (subset of enabled) that must be run
-// before the target. Currently this uses the `dependencies()` declarations
-// and returns the transitive closure in topological order.
-import { Graph, alg } from "graphlib";
-
-export function computePrereqs(
-  enabled: Record<string, Extension>,
-  target: string,
-  hookName: HookName,
-): string[] {
-  // Build graph from all enabled extensions' mustRunAfter hints. We query
-  // every extension for the given hook, add edges `name -> other` for each
-  // hinted `other`, ignore hints about disabled extensions, then compute the
-  // prerequisites for `target` via a topological sort. If a cycle exists we
-  // throw an error rather than attempting a fallback ordering.
-  const g = new Graph({ directed: true });
-  const names = Object.keys(enabled);
-  for (const name of names) g.setNode(name);
-  for (const [name, ext] of Object.entries(enabled)) {
-    const after = ext.mustRunAfter?.(names, hookName) ?? [];
-    for (const other of after) {
-      if (!g.hasNode(other)) continue; // ignore hints about disabled extensions
-      g.setEdge(name, other);
-    }
-  }
-
-  if (!g.hasNode(target)) return [];
-
-  // collect nodes that have a path to target (i.e. must run before target)
-  const preds = new Set<string>();
-  const stack = [target];
-  while (stack.length > 0) {
-    const cur = stack.pop() as string;
-    const inEdges = g.inEdges(cur) || [];
-    for (const e of inEdges) {
-      const src = e.v as string;
-      if (!preds.has(src)) {
-        preds.add(src);
-        stack.push(src);
-      }
-    }
-  }
-
-  if (preds.size === 0) return [];
-
-  // build subgraph induced by preds
-  const sub = new Graph({ directed: true });
-  const predNames = Array.from(preds);
-  for (const n of predNames) sub.setNode(n);
-  for (const e of g.edges() || []) {
-    if (preds.has(e.v as string) && preds.has(e.w as string))
-      sub.setEdge(e.v, e.w);
-  }
-
-  // Strict topo sort: throw on cycles to signal invalid ordering hints.
-  try {
-    return alg.topsort(sub).map((n) => n.toString());
-  } catch {
-    throw new Error(
-      `cycle detected in extension ordering prerequisites for '${target}'`,
-    );
-  }
 }
 
 // Compute a deterministic invocation order for a given hook across all
