@@ -3,10 +3,16 @@ Agent Guidelines for this repository
 IMPORTANT
 
 - To initialize a new package, run `bun init -y`.
-- Replace generated `tsconfig.json` and `eslint.config.mjs` by symlinks to those
-  file in root dir.
+- Replace generated `tsconfig.json` and `eslint.config.mjs` by a lightweight
+  re-export (eslint) or config extends (tsconfig) of the respective file in
+  the repository root.
 - To add dependencies, don't manually edit the `package.json` file. Run `bun add
 ...` instead.
+- Make sure typecheck (`bun tsc` in root), ESLint (`bun eslint`) and pre-commit
+  lints pass before committing.
+- When the user prompts to implement an extension, find `.temp_third_party` for
+  the reference implementation (in `nrs-lib-ts`) and the extension
+  specification, then create a package for that extension.
 
 Purpose
 
