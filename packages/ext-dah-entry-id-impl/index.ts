@@ -131,19 +131,8 @@ export function parseEntryId(id: string): EntryIdParsed | undefined {
   switch (type) {
     case "A": {
       // A-<DB>-<entry>-<suffix*> OR A-<rankedTimestamp> (custom id)
-      // First accept timestamp-based custom id: A-YYYYMMDDTHHMMSS or A-YYYYMMDDHHMMSS
-      if (
-        tokens.length === 2 &&
-        tokens[1] !== undefined &&
-        isTimestampLike(tokens[1])
-      ) {
-        return {
-          raw: id,
-          typePrefix: "A",
-          kind: "custom",
-          rankedTimestamp: tokens[1],
-        } satisfies ParsedCustom;
-      }
+      // per-prefix timestamp handling is covered by the generic timestamp
+      // handler above; fall through to standard anime parsing below.
 
       if (tokens.length >= 3) {
         const db = tokens[1] ?? "";
@@ -164,22 +153,8 @@ export function parseEntryId(id: string): EntryIdParsed | undefined {
     }
     case "M": {
       // M-VGMDB-AL|AR-<entry>-<maybe suffix>
-      // Also allow M-<rankedTimestamp>-<maybe suffix> (custom id)
-      if (
-        tokens.length >= 2 &&
-        tokens[1] !== undefined &&
-        isTimestampLike(tokens[1])
-      ) {
-        const ranked = tokens[1];
-        const rest = tokens.length > 2 ? tokens.slice(2).join("-") : undefined;
-        return {
-          raw: id,
-          typePrefix: "M",
-          kind: "custom",
-          rankedTimestamp: ranked,
-          rest,
-        } satisfies ParsedCustom;
-      }
+      // per-prefix timestamp handling is covered by the generic timestamp
+      // handler above; proceed to standard music parsing below.
 
       if (tokens.length >= 4) {
         const db = tokens[1] ?? "";
@@ -225,19 +200,9 @@ export function parseEntryId(id: string): EntryIdParsed | undefined {
       return undefined;
     }
     case "O": {
-      // Could be custom: <TypePrefix>-<rankedTimestamp>
-      if (
-        tokens.length === 2 &&
-        tokens[1] !== undefined &&
-        isTimestampLike(tokens[1])
-      ) {
-        return {
-          raw: id,
-          typePrefix: "O",
-          kind: "custom",
-          rankedTimestamp: tokens[1],
-        };
-      }
+      // per-prefix timestamp handling is covered by the generic timestamp
+      // handler above; O-specific parsing falls through to rejection for
+      // non-timestamp forms.
       return undefined;
     }
     case "GF": {
