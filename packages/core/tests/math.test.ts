@@ -238,7 +238,7 @@ describe("DiagonalMatrix", () => {
     const s = new ScalarMatrix(5);
     const result = d.mul(s);
     expect(result).toBeInstanceOf(DiagonalMatrix);
-    expect((result as DiagonalMatrix).data).toEqual([10, 15, 20]);
+    expect((result as unknown as DiagonalMatrix).data).toEqual([10, 15, 20]);
   });
 
   it("should multiply DiagonalMatrix", () => {
@@ -358,7 +358,7 @@ describe("RegularMatrix", () => {
     const s = new ScalarMatrix(2);
     const result = r.mul(s);
     expect(result).toBeInstanceOf(RegularMatrix);
-    expect((result as RegularMatrix).data).toEqual([2, 4, 6, 8]);
+    expect((result as unknown as RegularMatrix).data).toEqual([2, 4, 6, 8]);
   });
 
   it("should multiply DiagonalMatrix", () => {
@@ -368,7 +368,7 @@ describe("RegularMatrix", () => {
     expect(result).toBeInstanceOf(RegularMatrix);
     // [[1,2],[3,4]] * [[2,0],[0,3]] = [[1*2+2*0, 1*0+2*3], [3*2+4*0, 3*0+4*3]]
     // = [[2, 6], [6, 12]]
-    expect((result as RegularMatrix).data).toEqual([2, 6, 6, 12]);
+    expect((result as unknown as RegularMatrix).data).toEqual([2, 6, 6, 12]);
   });
 
   it("should multiply RegularMatrix", () => {

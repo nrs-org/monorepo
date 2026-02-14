@@ -127,9 +127,7 @@ describe("ext-dah-entry-id-impl", () => {
     };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: {
-        DAH_entry_id_impl: ext,
-      },
+      extensions: [ext],
     });
     expect(() => ext.preprocessData?.(ctx, dataGood)).not.toThrow();
 
@@ -147,9 +145,7 @@ describe("ext-dah-entry-id-impl", () => {
     const extNoVal = DAH_entry_id_impl({ validateEntries: false });
     const ctxNoVal = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: {
-        DAH_entry_id_impl: extNoVal,
-      },
+      extensions: [extNoVal],
     });
     expect(() => extNoVal.preprocessData?.(ctxNoVal, dataBad)).not.toThrow();
   });

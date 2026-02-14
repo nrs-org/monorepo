@@ -11,6 +11,8 @@ export type HookName =
   | "report";
 
 export interface Extension {
+  name: string;
+
   // Optional dependency declaration by extension name.
   dependencies?: () => string[];
 
@@ -80,7 +82,8 @@ export function computeHookOrder(
     return order.filter((name) => {
       const ext = enabled[name];
       return (
-        !!ext && typeof (ext as Record<string, unknown>)[hook] === "function"
+        !!ext &&
+        typeof (ext as unknown as Record<string, unknown>)[hook] === "function"
       );
     });
   } catch {

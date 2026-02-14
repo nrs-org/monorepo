@@ -44,7 +44,10 @@ describe("processContext relations", () => {
     for (let i = 0; i < 2; ++i) {
       const a = r2.overallVector.data[i];
       const b = r1.overallVector.data[i];
-      expect(Math.abs(a - 3 * b)).toBeLessThan(1e-8);
+      expect(a).toBeDefined();
+      expect(b).toBeDefined();
+      const diff = (a ?? 0) - 3 * (b ?? 0);
+      expect(Math.abs(diff)).toBeLessThan(1e-8);
     }
   });
 
@@ -104,12 +107,12 @@ describe("processContext relations", () => {
     const expectedE1 = [2 / 3, 1 / 6];
     const expectedE2 = [8 / 15, 2 / 15];
     for (let i = 0; i < 2; ++i) {
-      expect(Math.abs(ra.overallVector.data[i] - expectedE1[i])).toBeLessThan(
-        tol,
-      );
-      expect(Math.abs(rb.overallVector.data[i] - expectedE2[i])).toBeLessThan(
-        tol,
-      );
+      const a = ra.overallVector.data[i] ?? 0;
+      const b = rb.overallVector.data[i] ?? 0;
+      const expectedA = expectedE1[i] ?? -1;
+      const expectedB = expectedE2[i] ?? -1;
+      expect(Math.abs(a - expectedA)).toBeLessThan(tol);
+      expect(Math.abs(b - expectedB)).toBeLessThan(tol);
     }
     // negative scores should be (near) zero for these positive-only impacts
     expect(ra.negativeScore.data.every((v) => Math.abs(v) < tol)).toBe(true);

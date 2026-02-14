@@ -7,6 +7,7 @@ export interface DAH_entry_title extends Extension {
 
 export default function DAH_entry_title(): DAH_entry_title {
   return {
+    name: "DAH_entry_title",
     setTitle(meta: EntryMeta, title: string | undefined): void {
       if (title === undefined) {
         delete meta.DAH_entry_title;

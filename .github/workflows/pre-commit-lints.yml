@@ -21,5 +21,8 @@ jobs:
       - name: Install JS dependencies (bun)
         run: nix develop --extra-experimental-features 'nix-command flakes' -c bun install
 
+      - name: Typecheck (tsc --noEmit)
+        run: nix develop --extra-experimental-features 'nix-command flakes' -c bunx tsc --noEmit
+
       - name: Run pre-commit lints
         run: nix develop --extra-experimental-features 'nix-command flakes' -c pre-commit run -a

@@ -39,7 +39,9 @@ export interface Context {
 
 export interface ContextConfig {
   factorScoreCombineWeight?: Vector;
-  extensions?: Record<string, Extension>;
+  // Enabled extensions. The core expects an array of Extension objects
+  // where each extension supplies its `name` property.
+  extensions?: Extension[];
 }
 
 export function newContext(config: ContextConfig): Context {
@@ -48,18 +50,27 @@ export function newContext(config: ContextConfig): Context {
     factorScoreCombineWeight !== undefined,
     "factor score combine weight not specified",
   );
-  const extensions = config.extensions ?? {};
+
+  const extensions = config.extensions ?? [];
+  const extensionMap: Record<string, Extension> = {};
   const availableExtensionNames = new Set<string>([
-    ...Object.keys(extensions),
+    ...extensions.map((e) => e.name),
     ...implicitExtensions(),
   ]);
-  for (const [extName, ext] of Object.entries(extensions)) {
+
+  for (const ext of extensions) {
     for (const dep of ext.dependencies?.() ?? []) {
       assert(
         availableExtensionNames.has(dep),
-        `extension dependency "${dep}" of "${extName}" not found`,
+        `extension dependency "${dep}" of "${ext.name}" not found`,
       );
     }
+
+    assert(
+      !extensionMap[ext.name],
+      `duplicate extension name "${ext.name}" found; extension names must be unique`,
+    );
+    extensionMap[ext.name] = ext;
   }
   return {
     factorScoreCombineWeight,
@@ -69,7 +80,7 @@ export function newContext(config: ContextConfig): Context {
       newDiagonalMatrix: (d: number[]) => new DiagonalMatrix(d),
       newRegularMatrix: (d: number[]) => new RegularMatrix(d),
     },
-    extensions,
+    extensions: extensionMap,
   };
 }
 

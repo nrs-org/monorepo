@@ -236,6 +236,7 @@ export default function DAH_entry_id_impl(
 ): DAH_entry_id_impl {
   const validateEntries = config?.validateEntries ?? true;
   return {
+    name: "DAH_entry_id_impl",
     dependencies(): string[] {
       return ["DAH_entry_id"];
     },

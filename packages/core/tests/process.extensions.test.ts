@@ -12,6 +12,7 @@ describe("processContext extensions", () => {
   it("calls all extension hooks in the happy path", async () => {
     const calls: string[] = [];
     const ext = {
+      name: "e",
       preprocessData: () => {
         calls.push("pre");
         return undefined;
@@ -32,7 +33,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { e: ext },
+      extensions: [ext],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -59,6 +60,7 @@ describe("processContext extensions", () => {
 
   it("preprocessData replacement is used", async () => {
     const ext = {
+      name: "p",
       preprocessData: (_, data) => {
         // remove impacts so final overall vector is zero
         return { ...data, impacts: [] };
@@ -67,7 +69,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { p: ext },
+      extensions: [ext],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -93,6 +95,7 @@ describe("processContext extensions", () => {
 
   it("afterEntryResult can replace a result", async () => {
     const ext = {
+      name: "a",
       afterEntryResult: (_ctx, _id, result) => {
         return {
           positiveScore: result.positiveScore,
@@ -105,7 +108,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { a: ext },
+      extensions: [ext],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -128,6 +131,7 @@ describe("processContext extensions", () => {
 
   it("postProcess can replace the results map", async () => {
     const ext = {
+      name: "post",
       postProcess: (_, results) => {
         const m = new Map<string, Result>();
         const r = results.get("e1");
@@ -151,7 +155,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { post: ext },
+      extensions: [ext],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -176,6 +180,7 @@ describe("processContext extensions", () => {
   it("report hook is awaited by processContext", async () => {
     let reported = false;
     const ext = {
+      name: "r",
       report: async () => {
         // simulate async work
         await new Promise((res) => setTimeout(res, 10));
@@ -185,7 +190,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { r: ext },
+      extensions: [ext],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -207,6 +212,7 @@ describe("processContext extensions", () => {
   it("respects mustRunAfter ordering for hooks", async () => {
     const calls: string[] = [];
     const extA = {
+      name: "A",
       mustRunAfter: () => ["B"],
       afterEntryResult: () => {
         calls.push("A");
@@ -214,6 +220,7 @@ describe("processContext extensions", () => {
       },
     } satisfies Extension;
     const extB = {
+      name: "B",
       afterEntryResult: () => {
         calls.push("B");
         return undefined;
@@ -222,7 +229,7 @@ describe("processContext extensions", () => {
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { A: extA, B: extB },
+      extensions: [extA, extB],
     });
 
     const entry = { id: "e1", DAH_meta: {} };
@@ -244,12 +251,12 @@ describe("processContext extensions", () => {
   });
 
   it("throws when mustRunAfter hints cycle", async () => {
-    const extA = { mustRunAfter: () => ["B"] };
-    const extB = { mustRunAfter: () => ["A"] };
+    const extA = { name: "A", mustRunAfter: () => ["B"] };
+    const extB = { name: "B", mustRunAfter: () => ["A"] };
 
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: { A: extA, B: extB },
+      extensions: [extA, extB],
     });
 
     const entry = { id: "e1", DAH_meta: {} };

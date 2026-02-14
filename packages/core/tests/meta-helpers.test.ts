@@ -1,3 +1,4 @@
+import { it, expect } from "bun:test";
 import {
   makeEntryMeta,
   makeImpactMeta,
@@ -5,7 +6,7 @@ import {
   makeResultMeta,
 } from "../src/meta-helpers";
 
-test("meta helpers add correct owner tags", () => {
+it("meta helpers add correct owner tags", () => {
   const e = makeEntryMeta({ a: 1 });
   expect(e.DAH_meta_owner).toBe("entry");
   expect(e.a).toBe(1);
