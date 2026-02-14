@@ -1,6 +1,6 @@
 /.envrc
 /.direnv
-/node_modules
+node_modules
 /.pre-commit-config.yaml
 # Temporary checkout directory for LLM agents
 /.temp_third_party
