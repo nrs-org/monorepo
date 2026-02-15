@@ -1,21 +1,5 @@
-import type { Matrix } from "./math";
-
 export function assert(cond: boolean, msg?: string): asserts cond {
   if (!cond) throw new Error(msg || "Assertion failed");
-}
-
-export function ifDefined<T, R>(
-  obj: T | undefined,
-  callback: (a: T) => R,
-): R | undefined {
-  if (obj === undefined) return undefined;
-  return callback(obj);
-}
-
-export function mapAddAssign<K>(map: Map<K, Matrix>, id: K, matrix: Matrix) {
-  const current = map.get(id);
-  if (current !== undefined) matrix = matrix.add(current) as Matrix;
-  map.set(id, matrix);
 }
 
 export function combinePow(numbers: number[], factor: number) {
