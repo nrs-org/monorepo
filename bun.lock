@@ -67,6 +67,14 @@
         "@nrs-org/core": "*",
       },
     },
+    "packages/ext-dah-entry-progress": {
+      "name": "@nrs-org/ext-dah-entry-progress",
+      "version": "0.1.0",
+      "peerDependencies": {
+        "@nrs-org/core": "*",
+        "typescript": "^5",
+      },
+    },
     "packages/ext-dah-entry-title": {
       "name": "@nrs-org/ext-dah-entry-title",
       "version": "0.1.0",
@@ -167,6 +175,8 @@
     "@nrs-org/ext-dah-entry-contains": ["@nrs-org/ext-dah-entry-contains@workspace:packages/ext-dah-entry-contains"],
 
     "@nrs-org/ext-dah-entry-id-impl": ["@nrs-org/ext-dah-entry-id-impl@workspace:packages/ext-dah-entry-id-impl"],
+
+    "@nrs-org/ext-dah-entry-progress": ["@nrs-org/ext-dah-entry-progress@workspace:packages/ext-dah-entry-progress"],
 
     "@nrs-org/ext-dah-entry-title": ["@nrs-org/ext-dah-entry-title@workspace:packages/ext-dah-entry-title"],
 

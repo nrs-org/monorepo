@@ -1,0 +1,10 @@
+{
+  "name": "@nrs-org/ext-dah-entry-progress",
+  "version": "0.1.0",
+  "main": "index.ts",
+  "type": "module",
+  "peerDependencies": {
+    "@nrs-org/core": "*",
+    "typescript": "^5"
+  }
+}
