@@ -1,4 +1,11 @@
-import { Vector, type Extension } from "@nrs-org/core";
+import {
+  Vector,
+  type Extension,
+  ScalarMatrix,
+  DiagonalMatrix,
+  RegularMatrix,
+  type Matrix,
+} from "@nrs-org/core";
 
 // Factor interface and implementation
 export interface Factor<SN = string, N = string> {
@@ -71,6 +78,9 @@ export const factorScores = [
 
 export type FactorShortName = (typeof factorScores)[number]["shortName"];
 export type SubscoreName = "Emotion" | "Art" | "Boredom" | "Additional";
+export type MatrixKey =
+  | FactorShortName
+  | `${FactorShortName}_${FactorShortName}`;
 
 export interface DAH_factorsConfig {
   // Optionally override combine weights for factors and subscores
@@ -81,6 +91,19 @@ export interface DAH_factorsConfig {
 export type DAH_factors = Extension & {
   getFactorCombineWeightVector(): Vector;
   getSubscoreWeights(): Vector;
+
+  getFactor(name: string): Factor | undefined;
+  getSubscore(
+    name: string,
+  ):
+    | typeof Emotion
+    | typeof Art
+    | typeof BoredomGroup
+    | typeof AdditionalGroup
+    | undefined;
+
+  newVector(input?: Partial<Record<FactorShortName, number>>): Vector;
+  newMatrix(input?: Partial<Record<MatrixKey, number>>): Matrix;
 };
 
 export default function DAH_factors(
@@ -112,6 +135,96 @@ export default function DAH_factors(
         config.subscoreWeights?.Boredom ?? BoredomGroup.subscoreWeight,
         config.subscoreWeights?.Additional ?? AdditionalGroup.subscoreWeight,
       ]);
+    },
+
+    getFactor(name: string): Factor | undefined {
+      return factorScores.find((f) => f.shortName === name || f.name === name);
+    },
+
+    getSubscore(
+      name: string,
+    ):
+      | typeof Emotion
+      | typeof Art
+      | typeof BoredomGroup
+      | typeof AdditionalGroup
+      | undefined {
+      switch (name) {
+        case "Emotion":
+          return Emotion;
+        case "Art":
+          return Art;
+        case "Boredom":
+          return BoredomGroup;
+        case "Additional":
+          return AdditionalGroup;
+        default:
+          return undefined;
+      }
+    },
+
+    /**
+     * Ergonomically construct a canonical-order Vector from factor short name mapping.
+     * Omitted keys are set to 0.
+     */
+    newVector(input: Partial<Record<FactorShortName, number>> = {}): Vector {
+      return new Vector(
+        factorScores.map((f) => {
+          const v = input[f.shortName as FactorShortName];
+          return typeof v === "number" ? v : 0;
+        }),
+      );
+    },
+
+    /**
+     * Create a matrix by named factor pairs only (AP_CP ≠ CP_AP, no symmetry assumed).
+     * Input keys: X (diagonal for factor X) or X_Y for row X, column Y.
+     * Missing values default to 0.
+     * NOTE: AP_CP != CP_AP, no symmetry is assumed.
+     * Mathematically, AP_CP: influence of source AP to target CP, not the other way around.
+     * Returns DiagonalMatrix or RegularMatrix as appropriate, for ScalarMatrix,
+     * the user is advised to use the core API function (or the constructor) instead
+     * of this.
+     */
+    newMatrix(input: Partial<Record<MatrixKey, number>> = {}) {
+      const N = factorScores.length;
+
+      // Gather diagonals and off-diagonals
+      const diagonalKeys = factorScores
+        .map((f) => f.shortName)
+        .filter((k) => Object.prototype.hasOwnProperty.call(input, k));
+      const offDiagonalKeys = Object.keys(input).filter((k) => k.includes("_"));
+
+      if (diagonalKeys.length === 0 && offDiagonalKeys.length === 0) {
+        return new ScalarMatrix(0);
+      }
+
+      if (offDiagonalKeys.length === 0) {
+        const diagonal = this.newVector(
+          input as Partial<Record<FactorShortName, number>>,
+        );
+        return new DiagonalMatrix(diagonal.data);
+      }
+
+      // Build dense matrix
+      const mat = Array.from({ length: N * N }, () => 0);
+      for (const diagKey of diagonalKeys) {
+        const factor = this.getFactor(diagKey as FactorShortName);
+        if (factor === undefined) continue;
+        mat[factor.factorIndex * N + factor.factorIndex] =
+          input[diagKey as FactorShortName] ?? 0;
+      }
+      for (const nonDiagKey of offDiagonalKeys) {
+        const split = nonDiagKey.split("_");
+        if (split.length !== 2) continue;
+        const [rowKey, colKey] = split;
+        const rowFactor = this.getFactor(rowKey as FactorShortName);
+        const colFactor = this.getFactor(colKey as FactorShortName);
+        if (rowFactor === undefined || colFactor === undefined) continue;
+        mat[rowFactor.factorIndex * N + colFactor.factorIndex] =
+          input[nonDiagKey as MatrixKey] ?? 0;
+      }
+      return new RegularMatrix(mat);
     },
   };
 }
