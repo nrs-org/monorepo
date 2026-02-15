@@ -13,6 +13,9 @@ IMPORTANT
 - When the user prompts to implement an extension, find `.temp_third_party` for
   the reference implementation (in `nrs-lib-ts`) and the extension
   specification, then create a package for that extension.
+- When committing, if pre-commit checks fail, DO NOT assume the commit succeeded
+  and amend to that commit. Add the auto-fixed changes and then commit AGAIN
+  (with the new commit message and everything).
 
 Purpose
 
