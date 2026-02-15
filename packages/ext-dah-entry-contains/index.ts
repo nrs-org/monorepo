@@ -1,5 +1,6 @@
 import {
   type Extension,
+  makeRelationMeta,
   type Context,
   type Id,
   type Matrix,
@@ -26,7 +27,7 @@ export default function DAH_entry_contains(): Extension & {
       contributors: Map<Id, Matrix>,
       childId: Id,
     ) {
-      const meta: Record<string, unknown> = {};
+      const meta = makeRelationMeta();
       // Retrieve DAH_ir_source extension if available
       const irSourceExt = context.extensions?.["DAH_ir_source"] as
         | DAH_ir_source_extension

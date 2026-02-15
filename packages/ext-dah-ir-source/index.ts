@@ -1,4 +1,8 @@
-import { type EntryMeta, type Extension } from "@nrs-org/core";
+import {
+  type Extension,
+  type ImpactMeta,
+  type RelationMeta,
+} from "@nrs-org/core";
 
 /**
  * Type for the DAH_ir_source metadata field.
@@ -9,6 +13,8 @@ export interface IrSourceMeta {
   name: string;
 }
 
+export type IrMeta = ImpactMeta | RelationMeta;
+
 /**
  * Helper to set the DAH_ir_source field on entry metadata.
  */
@@ -16,8 +22,8 @@ export interface IrSourceMeta {
  * The DAH_ir_source extension: registers the metadata field and provides helpers.
  */
 export interface DAH_ir_source_extension extends Extension {
-  setIrSource(meta: EntryMeta, value: IrSourceMeta | undefined): void;
-  getIrSource(meta: EntryMeta): IrSourceMeta | undefined;
+  setIrSource(meta: IrMeta, value: IrSourceMeta | undefined): void;
+  getIrSource(meta: IrMeta): IrSourceMeta | undefined;
 }
 
 export default function DAH_ir_source(): DAH_ir_source_extension {
@@ -26,14 +32,14 @@ export default function DAH_ir_source(): DAH_ir_source_extension {
     dependencies(): string[] {
       return [];
     },
-    setIrSource(meta: EntryMeta, value: IrSourceMeta | undefined): void {
+    setIrSource(meta, value): void {
       if (value === undefined) {
         delete meta["DAH_ir_source"];
       } else {
         meta["DAH_ir_source"] = value;
       }
     },
-    getIrSource(meta: EntryMeta): IrSourceMeta | undefined {
+    getIrSource(meta): IrSourceMeta | undefined {
       const val = meta["DAH_ir_source"];
       if (
         val &&

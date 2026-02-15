@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import type { Entry } from "@nrs-org/core";
+import { makeEntryMeta } from "@nrs-org/core";
 import DAH_entry_bestGirl from "../index";
 
 describe("ext-dah-entry-bestgirl", () => {
@@ -10,7 +11,7 @@ describe("ext-dah-entry-bestgirl", () => {
 
   it("sets and gets best girl on entry DAH_meta", () => {
     const ext = DAH_entry_bestGirl();
-    const e: Entry = { id: "e1", DAH_meta: {} };
+    const e: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     expect(ext.getBestGirl(e.DAH_meta)).toBeUndefined();
     ext.setBestGirl(e.DAH_meta, "Yuno");
     expect(ext.getBestGirl(e.DAH_meta)).toBe("Yuno");

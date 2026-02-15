@@ -8,6 +8,11 @@ import {
   ScalarMatrix,
 } from "../index";
 
+import {
+  makeEntryMeta,
+  makeImpactMeta,
+  makeResultMeta,
+} from "../src/meta-helpers";
 describe("processContext extensions", () => {
   it("calls all extension hooks in the happy path", async () => {
     const calls: string[] = [];
@@ -36,9 +41,9 @@ describe("processContext extensions", () => {
       extensions: [ext],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -72,9 +77,9 @@ describe("processContext extensions", () => {
       extensions: [ext],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -101,7 +106,7 @@ describe("processContext extensions", () => {
           positiveScore: result.positiveScore,
           negativeScore: result.negativeScore,
           overallVector: result.overallVector,
-          DAH_meta: { replaced: true },
+          DAH_meta: makeResultMeta({ replaced: true }),
         };
       },
     } satisfies Extension;
@@ -111,9 +116,9 @@ describe("processContext extensions", () => {
       extensions: [ext],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -147,7 +152,7 @@ describe("processContext extensions", () => {
             positiveScore,
             negativeScore,
             overallVector,
-            DAH_meta: { replacedByPost: true },
+            DAH_meta: makeResultMeta({ replacedByPost: true }),
           });
         return m;
       },
@@ -158,9 +163,9 @@ describe("processContext extensions", () => {
       extensions: [ext],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -193,9 +198,9 @@ describe("processContext extensions", () => {
       extensions: [ext],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -232,9 +237,9 @@ describe("processContext extensions", () => {
       extensions: [extA, extB],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
@@ -259,9 +264,9 @@ describe("processContext extensions", () => {
       extensions: [extA, extB],
     });
 
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };

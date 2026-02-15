@@ -16,6 +16,7 @@ import {
   matrix as mathjsMatrix,
   type Matrix as MathJsMatrix,
 } from "mathjs";
+import { makeResultMeta } from "./meta-helpers";
 
 function implicitExtensions() {
   return ["DAH_meta", "DAH_entry_id"];
@@ -306,7 +307,7 @@ export async function processContext(
         positiveScore: newZeroVector(context),
         negativeScore: newZeroVector(context),
         overallVector: newZeroVector(context),
-        DAH_meta: {},
+        DAH_meta: makeResultMeta(),
       };
       for (let j = 0; j < N; ++j) {
         result.positiveScore.data[j] = positiveScores.get([i * N + j, 0]);

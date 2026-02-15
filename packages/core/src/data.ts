@@ -8,10 +8,10 @@ export type MetaOwner = "entry" | "impact" | "relation" | "result" | undefined;
 
 // Tagged meta types — DAH_meta_owner is optional to allow nested metas that don't
 // explicitly set an owner. It's a regular property (will be serialized).
-export type EntryMeta = Meta & { DAH_meta_owner?: "entry" | undefined };
-export type ImpactMeta = Meta & { DAH_meta_owner?: "impact" | undefined };
-export type RelationMeta = Meta & { DAH_meta_owner?: "relation" | undefined };
-export type ResultMeta = Meta & { DAH_meta_owner?: "result" | undefined };
+export type EntryMeta = Meta & { DAH_meta_owner: "entry" };
+export type ImpactMeta = Meta & { DAH_meta_owner: "impact" };
+export type RelationMeta = Meta & { DAH_meta_owner: "relation" };
+export type ResultMeta = Meta & { DAH_meta_owner: "result" };
 
 export interface HasMeta<M extends Meta = Meta> {
   DAH_meta: M;

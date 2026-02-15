@@ -1,10 +1,10 @@
 import { describe, it, expect } from "bun:test";
 import DAH_ir_source, { type IrSourceMeta } from "../index";
-import type { EntryMeta } from "@nrs-org/core";
+import { makeRelationMeta } from "@nrs-org/core";
 
 describe("DAH_ir_source extension", () => {
   const ext = DAH_ir_source();
-  const sampleMeta: EntryMeta = {};
+  const sampleMeta = makeRelationMeta();
   const sampleValue: IrSourceMeta = {
     extension: "DAH_ir_source",
     version: "1.0.0",
@@ -29,8 +29,8 @@ describe("DAH_ir_source extension", () => {
   });
 
   it("returns undefined if field is missing or wrong type", () => {
-    const badMeta: EntryMeta = { DAH_ir_source: { invalid: true } };
-    expect(ext.getIrSource({})).toBeUndefined();
+    const badMeta = makeRelationMeta({ DAH_ir_source: { invalid: true } });
+    expect(ext.getIrSource(makeRelationMeta())).toBeUndefined();
     expect(ext.getIrSource(badMeta)).toBeUndefined();
   });
 });

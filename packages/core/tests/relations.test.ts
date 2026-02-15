@@ -1,4 +1,9 @@
 import { describe, it, expect } from "bun:test";
+import {
+  makeEntryMeta,
+  makeImpactMeta,
+  makeRelationMeta,
+} from "../src/meta-helpers";
 import { newContext, processContext } from "../src/process";
 import { Vector, ScalarMatrix } from "../src/math";
 
@@ -6,22 +11,22 @@ describe("processContext relations", () => {
   it("applies combined relation weights from multiple relations (non-cyclic)", async () => {
     const ctx = newContext({ factorScoreCombineWeight: new Vector([1, 1]) });
 
-    const e1 = { id: "e1", DAH_meta: {} };
-    const e2 = { id: "e2", DAH_meta: {} };
+    const e1 = { id: "e1", DAH_meta: makeEntryMeta() };
+    const e2 = { id: "e2", DAH_meta: makeEntryMeta() };
 
     const impactE1 = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
 
     const relA = {
-      DAH_meta: {},
+      DAH_meta: makeRelationMeta(),
       contributors: new Map([["e2", new ScalarMatrix(1)]]),
       references: new Map([["e1", new ScalarMatrix(1)]]),
     };
     const relB = {
-      DAH_meta: {},
+      DAH_meta: makeRelationMeta(),
       contributors: new Map([["e2", new ScalarMatrix(1)]]),
       references: new Map([["e1", new ScalarMatrix(2)]]),
     };
@@ -54,27 +59,27 @@ describe("processContext relations", () => {
   it("computes results for a two-node cyclic relation (SCC)", async () => {
     const ctx = newContext({ factorScoreCombineWeight: new Vector([1, 1]) });
 
-    const e1 = { id: "e1", DAH_meta: {} };
-    const e2 = { id: "e2", DAH_meta: {} };
+    const e1 = { id: "e1", DAH_meta: makeEntryMeta() };
+    const e2 = { id: "e2", DAH_meta: makeEntryMeta() };
 
     const impactE1 = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.4, 0.1]),
     };
     const impactE2 = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e2", new ScalarMatrix(1)]]),
       score: new Vector([0.2, 0.05]),
     };
 
     const r1 = {
-      DAH_meta: {},
+      DAH_meta: makeRelationMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       references: new Map([["e2", new ScalarMatrix(0.5)]]),
     };
     const r2 = {
-      DAH_meta: {},
+      DAH_meta: makeRelationMeta(),
       contributors: new Map([["e2", new ScalarMatrix(1)]]),
       references: new Map([["e1", new ScalarMatrix(0.5)]]),
     };

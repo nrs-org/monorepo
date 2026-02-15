@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import type { Entry } from "@nrs-org/core";
+import { makeEntryMeta } from "@nrs-org/core";
 import DAH_entry_title from "../index";
 
 describe("ext-dah-entry-title", () => {
@@ -10,7 +11,7 @@ describe("ext-dah-entry-title", () => {
 
   it("sets and gets title on entry DAH_meta", () => {
     const ext = DAH_entry_title();
-    const e: Entry = { id: "e1", DAH_meta: {} };
+    const e: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     expect(ext.getTitle(e.DAH_meta)).toBeUndefined();
     ext.setTitle(e.DAH_meta, "My Nice Title");
     expect(ext.getTitle(e.DAH_meta)).toBe("My Nice Title");

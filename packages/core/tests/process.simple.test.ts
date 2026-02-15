@@ -1,4 +1,5 @@
 import { describe, it, expect } from "bun:test";
+import { makeEntryMeta, makeImpactMeta } from "../src/meta-helpers";
 import { newContext, processContext } from "../src/process";
 import { Vector } from "../src/math";
 import { ScalarMatrix } from "../src/math";
@@ -8,9 +9,9 @@ describe("processContext simple", () => {
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([1, 1]),
     });
-    const entry = { id: "e1", DAH_meta: {} };
+    const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
-      DAH_meta: {},
+      DAH_meta: makeImpactMeta(),
       contributors: new Map([["e1", new ScalarMatrix(1)]]),
       score: new Vector([0.5, 0.2]),
     };
