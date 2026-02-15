@@ -46,12 +46,6 @@ export interface ContextConfig {
 }
 
 export function newContext(config: ContextConfig): Context {
-  const factorScoreCombineWeight = config.factorScoreCombineWeight;
-  assert(
-    factorScoreCombineWeight !== undefined,
-    "factor score combine weight not specified",
-  );
-
   const extensions = config.extensions ?? [];
   const extensionMap: Record<string, Extension> = {};
   const availableExtensionNames = new Set<string>([
@@ -73,6 +67,25 @@ export function newContext(config: ContextConfig): Context {
     );
     extensionMap[ext.name] = ext;
   }
+
+  let factorScoreCombineWeight = config.factorScoreCombineWeight;
+  runExtensionHooksSync(
+    "getFactorScoreWeights",
+    (ext) => {
+      if (ext.getFactorScoreWeights) {
+        const w = ext.getFactorScoreWeights();
+        if (w !== undefined) {
+          factorScoreCombineWeight = w;
+        }
+      }
+    },
+    extensionMap,
+  );
+  assert(
+    factorScoreCombineWeight !== undefined,
+    "factor score combine weight not specified",
+  );
+
   return {
     factorScoreCombineWeight,
     api: {
@@ -219,6 +232,20 @@ async function runExtensionHooks(
     const ext = extensions[name];
     if (ext === undefined) continue;
     await hookFn(ext);
+  }
+}
+
+function runExtensionHooksSync(
+  hookName: HookName,
+  hookFn: (e: Extension) => void,
+  extensions?: Record<string, Extension>,
+) {
+  if (extensions === undefined) return;
+  const order = computeHookOrder(extensions, hookName);
+  for (const name of order) {
+    const ext = extensions[name];
+    if (ext === undefined) continue;
+    hookFn(ext);
   }
 }
 

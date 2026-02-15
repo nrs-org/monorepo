@@ -2,9 +2,11 @@
 import type { Context } from "./process";
 import type { Data, Id, Result } from "./data";
 import { Graph, alg } from "graphlib";
+import type { Vector } from "./math";
 
 // Single interface for all extensions. Keep it small and async-friendly.
 export type HookName =
+  | "getFactorScoreWeights"
   | "preprocessData"
   | "afterEntryResult"
   | "postProcess"
@@ -23,6 +25,8 @@ export interface Extension {
   // express ordering constraints that are independent of `dependencies()`.
   // The core will aggregate these hints when computing final ordering.
   mustRunAfter?: (extensions: string[], hook: HookName) => string[];
+
+  getFactorScoreWeights?: () => Vector | undefined;
 
   // Called before any processing begins. May mutate `data` or return a
   // replacement `Data` object. Async allowed.

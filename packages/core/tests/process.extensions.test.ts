@@ -259,11 +259,6 @@ describe("processContext extensions", () => {
     const extA = { name: "A", mustRunAfter: () => ["B"] };
     const extB = { name: "B", mustRunAfter: () => ["A"] };
 
-    const ctx = newContext({
-      factorScoreCombineWeight: new Vector([1, 1]),
-      extensions: [extA, extB],
-    });
-
     const entry = { id: "e1", DAH_meta: makeEntryMeta() };
     const impact = {
       DAH_meta: makeImpactMeta(),
@@ -278,6 +273,10 @@ describe("processContext extensions", () => {
 
     let threw = false;
     try {
+      const ctx = newContext({
+        factorScoreCombineWeight: new Vector([1, 1]),
+        extensions: [extA, extB],
+      });
       await processContext(ctx, data);
     } catch (err) {
       threw = true;
