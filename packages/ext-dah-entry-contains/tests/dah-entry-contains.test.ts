@@ -6,7 +6,7 @@ import DAH_ir_source from "@nrs-org/ext-dah-ir-source";
 describe("ext-dah-entry-contains", () => {
   it("constructs and has no dependencies", () => {
     const ext = DAH_entry_contains();
-    expect(ext.dependencies?.() ?? []).toEqual([]);
+    expect(ext.dependencies?.() ?? []).toEqual(["DAH_meta"]);
   });
 
   it("produces a relation and injects DAH_ir_source if extension is enabled", async () => {

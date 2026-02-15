@@ -6,7 +6,7 @@ import DAH_entry_title from "../index";
 describe("ext-dah-entry-title", () => {
   it("constructs and has no dependencies", () => {
     const ext = DAH_entry_title();
-    expect(ext.dependencies?.() ?? []).toEqual([]);
+    expect(ext.dependencies?.() ?? []).toEqual(["DAH_meta"]);
   });
 
   it("sets and gets title on entry DAH_meta", () => {

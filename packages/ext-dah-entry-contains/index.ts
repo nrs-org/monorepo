@@ -20,8 +20,9 @@ export default function DAH_entry_contains(): Extension & {
   return {
     name: "DAH_entry_contains",
     dependencies(): string[] {
-      return [];
+      return ["DAH_meta"];
     },
+
     entryContains(
       context: Context,
       contributors: Map<Id, Matrix>,

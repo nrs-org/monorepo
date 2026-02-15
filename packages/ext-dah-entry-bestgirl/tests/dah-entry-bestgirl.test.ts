@@ -6,7 +6,7 @@ import DAH_entry_bestGirl from "../index";
 describe("ext-dah-entry-bestgirl", () => {
   it("constructs and has no dependencies", () => {
     const ext = DAH_entry_bestGirl();
-    expect(ext.dependencies?.() ?? []).toEqual([]);
+    expect(ext.dependencies?.() ?? []).toEqual(["DAH_meta"]);
   });
 
   it("sets and gets best girl on entry DAH_meta", () => {

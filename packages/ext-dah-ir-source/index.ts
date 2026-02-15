@@ -30,8 +30,9 @@ export default function DAH_ir_source(): DAH_ir_source_extension {
   return {
     name: "DAH_ir_source",
     dependencies(): string[] {
-      return [];
+      return ["DAH_meta"];
     },
+
     setIrSource(meta, value): void {
       if (value === undefined) {
         delete meta["DAH_ir_source"];

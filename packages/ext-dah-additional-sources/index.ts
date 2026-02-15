@@ -61,6 +61,9 @@ export interface DAH_additional_sources extends Extension {
 export default function DAH_additional_sources(): DAH_additional_sources {
   return {
     name: "DAH_additional_sources",
+    dependencies(): string[] {
+      return ["DAH_meta"];
+    },
     setAdditionalSources(
       meta: EntryMeta,
       sources: AdditionalSources | undefined,

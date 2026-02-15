@@ -27,6 +27,9 @@ export interface DAH_entry_type extends Extension {
 export default function DAH_entry_type(): DAH_entry_type {
   return {
     name: "DAH_entry_type",
+    dependencies(): string[] {
+      return ["DAH_meta"];
+    },
     setType(meta: EntryMeta, type: EntryType | undefined): void {
       if (type === undefined) {
         delete meta.DAH_entry_type;
