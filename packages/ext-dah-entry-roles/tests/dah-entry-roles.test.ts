@@ -257,8 +257,6 @@ describe("ext-dah-entry-roles", () => {
 describe("preprocess integration", () => {
   it("preprocesses data and creates relations for entries with roles", async () => {
     const ext = DAH_entry_roles();
-    const factorsExt = DAH_factors();
-    const containsExt = DAH_entry_contains();
 
     const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
@@ -281,7 +279,7 @@ describe("preprocess integration", () => {
     };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([]),
-      extensions: [factorsExt, containsExt],
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
     });
 
     await ext.preprocessData?.(ctx, data);
@@ -311,7 +309,7 @@ describe("preprocess integration", () => {
     const data = { entries: new Map(), impacts: [impact], relations: [] };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([]),
-      extensions: [ext, DAH_factors()],
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
     });
 
     await ext.preprocessData?.(ctx, data);
@@ -320,8 +318,6 @@ describe("preprocess integration", () => {
 
   it("handles entry with title containing feat", async () => {
     const ext = DAH_entry_roles();
-    const factorsExt = DAH_factors();
-    const containsExt = DAH_entry_contains();
 
     const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     (entry.DAH_meta as Record<string, unknown>).DAH_entry_title =
@@ -346,7 +342,7 @@ describe("preprocess integration", () => {
     };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([]),
-      extensions: [factorsExt, containsExt],
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
     });
 
     await ext.preprocessData?.(ctx, data);
@@ -355,8 +351,6 @@ describe("preprocess integration", () => {
 
   it("uses custom music variables from config and roles", async () => {
     const ext = DAH_entry_roles({ defaultMusicVars: { vocallyrics: 0.7 } });
-    const factorsExt = DAH_factors();
-    const containsExt = DAH_entry_contains();
 
     const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
@@ -380,7 +374,7 @@ describe("preprocess integration", () => {
     };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([]),
-      extensions: [factorsExt, containsExt],
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
     });
 
     await ext.preprocessData?.(ctx, data);
@@ -402,8 +396,6 @@ describe("preprocess integration", () => {
     ];
     for (const roleType of atomicRoles) {
       const ext = DAH_entry_roles();
-      const factorsExt = DAH_factors();
-      const containsExt = DAH_entry_contains();
 
       const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
       (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
@@ -426,7 +418,7 @@ describe("preprocess integration", () => {
       };
       const ctx = newContext({
         factorScoreCombineWeight: new Vector([]),
-        extensions: [factorsExt, containsExt],
+        extensions: [ext, DAH_factors(), DAH_entry_contains()],
       });
 
       await ext.preprocessData?.(ctx, data);
@@ -436,8 +428,6 @@ describe("preprocess integration", () => {
 
   it("handles multiple contributors with different roles", async () => {
     const ext = DAH_entry_roles();
-    const factorsExt = DAH_factors();
-    const containsExt = DAH_entry_contains();
 
     const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
     (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
@@ -468,7 +458,7 @@ describe("preprocess integration", () => {
     };
     const ctx = newContext({
       factorScoreCombineWeight: new Vector([]),
-      extensions: [factorsExt, containsExt],
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
     });
 
     await ext.preprocessData?.(ctx, data);
