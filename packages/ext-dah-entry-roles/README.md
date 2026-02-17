@@ -19,14 +19,16 @@ arrangement, vocals, lyrics, visuals, etc.) are weighted in the scoring system.
 ## Role Types
 
 ### Atomic Role Types
+
 - `total`: Identity contribution
 - `compose`, `arrange`: Composition and arrangement work
 - `image`, `image_feat`: Visual contributions
-- `vocal`, `lyrics`: Vocal and lyrical contributions  
+- `vocal`, `lyrics`: Vocal and lyrical contributions
 - `inst_perform`: Instrumental performance
 - `mv`, `albumart`: Music video and album art
 
 ### Composite Role Types
+
 - `music_total`: Overall music contribution
 - `image_total`: Overall visual contribution
 - `prod`, `perform`: Production and performance
@@ -68,4 +70,3 @@ bun test
 This extension was created as part of the NRS monorepo using the specification from
 https://github.com/nrs-org/nrs and the reference implementation from
 https://github.com/nrs-org/nrs-lib-ts.
-

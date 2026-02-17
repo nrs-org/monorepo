@@ -253,7 +253,9 @@ const CompositeRoleTypes = initComposite({
     factor("music_total")
       .add(factor("image_total").scale(-1))
       .mul(
-        new ScalarMatrix(vars.vocallyrics).add(ALMatrix(1.0 - vars.vocallyrics)),
+        new ScalarMatrix(vars.vocallyrics).add(
+          ALMatrix(1.0 - vars.vocallyrics),
+        ),
       ),
   ),
   inst_total: composite(["inst", "inst_perform"], (factor) =>
@@ -390,12 +392,17 @@ export default function DAH_entry_roles(
   }
 
   // Preprocess entries
-  function preprocessEntries(context: Context, entries: Map<Id, Entry>): Relation[] {
+  function preprocessEntries(
+    context: Context,
+    entries: Map<Id, Entry>,
+  ): Relation[] {
     const relations: Relation[] = [];
     for (const [id, entry] of entries.entries()) {
-      const rolesData = (entry.DAH_meta as EntryMeta & {
-        DAH_entry_roles?: EntryRoles<AtomicRoleType>;
-      }).DAH_entry_roles;
+      const rolesData = (
+        entry.DAH_meta as EntryMeta & {
+          DAH_entry_roles?: EntryRoles<AtomicRoleType>;
+        }
+      ).DAH_entry_roles;
       if (rolesData === undefined) {
         continue;
       }
@@ -410,9 +417,11 @@ export default function DAH_entry_roles(
   // Preprocess impacts and relations
   function preprocessIRs(irs: Iterable<Impact | Relation>) {
     for (const ir of irs) {
-      const rolesData = (ir.DAH_meta as (ImpactMeta | RelationMeta) & {
-        DAH_entry_roles?: EntryRoles<AtomicRoleType>;
-      }).DAH_entry_roles;
+      const rolesData = (
+        ir.DAH_meta as (ImpactMeta | RelationMeta) & {
+          DAH_entry_roles?: EntryRoles<AtomicRoleType>;
+        }
+      ).DAH_entry_roles;
       if (rolesData === undefined) {
         continue;
       }
@@ -436,16 +445,20 @@ export default function DAH_entry_roles(
       entryId: Id,
       roles: Iterable<EntryRole>,
     ) {
-      let entryRoles = (object.DAH_meta as EntryMeta & {
-        DAH_entry_roles?: EntryRoles<AtomicRoleType>;
-      }).DAH_entry_roles;
+      let entryRoles = (
+        object.DAH_meta as EntryMeta & {
+          DAH_entry_roles?: EntryRoles<AtomicRoleType>;
+        }
+      ).DAH_entry_roles;
       if (entryRoles === undefined) {
         entryRoles = {
           roles: {},
         };
-        (object.DAH_meta as EntryMeta & {
-          DAH_entry_roles?: EntryRoles<AtomicRoleType>;
-        }).DAH_entry_roles = entryRoles;
+        (
+          object.DAH_meta as EntryMeta & {
+            DAH_entry_roles?: EntryRoles<AtomicRoleType>;
+          }
+        ).DAH_entry_roles = entryRoles;
       }
 
       const thisEntryRoles = (entryRoles.roles[entryId] ??= []);
