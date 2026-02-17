@@ -8,3 +8,4 @@ node_modules
 # coverage outputs
 coverage
 *.lcov
+package-lock.json
