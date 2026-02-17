@@ -142,9 +142,7 @@ export interface ExtConfigDAHStandards {
 // Metadata argument types (used in IR source meta)
 // ---------------------------------------------------------------------------
 
-export type EmotionWeights = Partial<
-  Record<string, number>
->;
+export type EmotionWeights = Partial<Record<string, number>>;
 
 export interface EmotionArgs {
   base: number;
@@ -331,11 +329,7 @@ export type DAH_standards = Extension & {
 
   ehi(context: Context, contributors: Contributors): Impact;
 
-  epi(
-    context: Context,
-    contributors: Contributors,
-    factor: number,
-  ): Impact;
+  epi(context: Context, contributors: Contributors, factor: number): Impact;
 
   jumpscare(context: Context, contributors: Contributors): Impact;
   sleeplessNight(context: Context, contributors: Contributors): Impact;
@@ -416,11 +410,7 @@ export type DAH_standards = Extension & {
     reference: Id,
   ): Relation;
 
-  remix(
-    context: Context,
-    contributors: Contributors,
-    reference: Id,
-  ): Relation;
+  remix(context: Context, contributors: Contributors, reference: Id): Relation;
 
   killedBy(
     context: Context,
@@ -450,8 +440,7 @@ export default function DAH_standards(
   // -- private helpers --
 
   function irMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> &
-      Record<string, unknown>,
+    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
   ): Record<string, unknown> {
     return {
       DAH_ir_source: {
@@ -463,15 +452,13 @@ export default function DAH_standards(
   }
 
   function impactMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> &
-      Record<string, unknown>,
+    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
   ): ImpactMeta {
     return makeImpactMeta({ ...irMeta(meta) });
   }
 
   function relationMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> &
-      Record<string, unknown>,
+    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
   ): RelationMeta {
     return makeRelationMeta({ ...irMeta(meta) });
   }
@@ -638,8 +625,7 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base =
-        mapClampThrow(Math.abs(factor), 0.0, 1.0, 2.0, 3.0) * sign;
+      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, 2.0, 3.0) * sign;
       return this.xei(
         context,
         contributors,
@@ -658,8 +644,7 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base =
-        mapClampThrow(Math.abs(factor), 0.0, 1.0, 0.0, 2.0) * sign;
+      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, 0.0, 2.0) * sign;
       return this.xei(
         context,
         contributors,
@@ -704,32 +689,21 @@ export default function DAH_standards(
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
       const base = 1.2 * Math.pow(days / 90, MP.factorWeight);
-      return this.emotion(
-        context,
-        contributors,
-        base,
-        [[MP, 1.0]],
-        "waifu",
-        {
-          waifuArgs: {
-            waifu,
-            durationMs: dur,
-            days,
-            periods: periods.map((pr) => periodMetaEntry(pr)),
-          },
+      return this.emotion(context, contributors, base, [[MP, 1.0]], "waifu", {
+        waifuArgs: {
+          waifu,
+          durationMs: dur,
+          days,
+          periods: periods.map((pr) => periodMetaEntry(pr)),
         },
-      );
+      });
     },
 
     ehi(context: Context, contributors: Contributors): Impact {
       return this.emotion(context, contributors, 3.5, [[AP, 1.0]], "ehi");
     },
 
-    epi(
-      context: Context,
-      contributors: Contributors,
-      factor: number,
-    ): Impact {
+    epi(context: Context, contributors: Contributors, factor: number): Impact {
       const base = mapClampThrow(factor, 0.0, 1.0, 3.5, 4.5);
       return this.emotion(context, contributors, base, [[AP, 1.0]], "epi", {
         epiArgs: { factor },
@@ -737,13 +711,7 @@ export default function DAH_standards(
     },
 
     jumpscare(context: Context, contributors: Contributors): Impact {
-      return this.emotion(
-        context,
-        contributors,
-        1.0,
-        [[MP, 1.0]],
-        "jumpscare",
-      );
+      return this.emotion(context, contributors, 1.0, [[MP, 1.0]], "jumpscare");
     },
 
     sleeplessNight(context: Context, contributors: Contributors): Impact {
@@ -771,9 +739,7 @@ export default function DAH_standards(
     ): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [
-          [Additional, newField ? 2.0 : 1.0],
-        ]),
+        score: vectorFromFactors(context, [[Additional, newField ? 2.0 : 1.0]]),
         DAH_meta: impactMeta({ name: "interestField" }),
       };
     },
@@ -865,8 +831,7 @@ export default function DAH_standards(
 
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base =
-        strength * Math.pow(days / 120, AP.factorWeight) * 4.0;
+      const base = strength * Math.pow(days / 120, AP.factorWeight) * 4.0;
 
       return this.emotion(context, contributors, base, [[AP, 1.0]], "meme", {
         memeArgs: {

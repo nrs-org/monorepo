@@ -1,6 +1,15 @@
 import { describe, it, expect } from "bun:test";
 import { newContext, ScalarMatrix, DiagonalMatrix } from "@nrs-org/core";
-import DAH_factors, { AP, MP, AU, AM, AV, AL, Boredom, Additional } from "@nrs-org/ext-dah-factors";
+import DAH_factors, {
+  AP,
+  MP,
+  AU,
+  AM,
+  AV,
+  AL,
+  Boredom,
+  Additional,
+} from "@nrs-org/ext-dah-factors";
 import DAH_standards, {
   Sign,
   VisualType,
@@ -51,22 +60,17 @@ describe("emotion", () => {
 
   it("throws on empty emotions", () => {
     const { ctx, standards } = makeCtx();
-    expect(() =>
-      standards.emotion(ctx, contribs(), 3.0, []),
-    ).toThrow("empty emotion list");
+    expect(() => standards.emotion(ctx, contribs(), 3.0, [])).toThrow(
+      "empty emotion list",
+    );
   });
 
   it("supports multiple emotions", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.emotion(
-      ctx,
-      contribs(),
-      2.0,
-      [
-        [AP, 0.5],
-        [MP, 0.8],
-      ],
-    );
+    const impact = standards.emotion(ctx, contribs(), 2.0, [
+      [AP, 0.5],
+      [MP, 0.8],
+    ]);
     expect(impact.score.data[AP.factorIndex]).toBeGreaterThan(0);
     expect(impact.score.data[MP.factorIndex]).toBeGreaterThan(0);
   });
@@ -135,13 +139,9 @@ describe("pads", () => {
 describe("aei", () => {
   it("maps factor 0 → base 2.0 for positive sign", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.aei(
-      ctx,
-      contribs(),
-      0.0,
-      Sign.Positive,
-      [[AP, 1.0]],
-    );
+    const impact = standards.aei(ctx, contribs(), 0.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
     const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
     expect(ir.name).toBe("aei");
     const args = ir.emotionArgs as { base: number };
@@ -150,31 +150,21 @@ describe("aei", () => {
 
   it("maps factor 1 → base 3.0 for positive sign", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.aei(
-      ctx,
-      contribs(),
-      1.0,
-      Sign.Positive,
-      [[AP, 1.0]],
-    );
-    const args = (
-      impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
+    const impact = standards.aei(ctx, contribs(), 1.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
+    const args = (impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
     expect(args.base).toBeCloseTo(3.0, 10);
   });
 
   it("inverts base for negative sign", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.aei(
-      ctx,
-      contribs(),
-      0.5,
-      Sign.Negative,
-      [[AP, 1.0]],
-    );
-    const args = (
-      impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
+    const impact = standards.aei(ctx, contribs(), 0.5, Sign.Negative, [
+      [AP, 1.0],
+    ]);
+    const args = (impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
     expect(args.base).toBeLessThan(0);
   });
 
@@ -189,31 +179,21 @@ describe("aei", () => {
 describe("nei", () => {
   it("maps factor 0 → base 0.0", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.nei(
-      ctx,
-      contribs(),
-      0.0,
-      Sign.Positive,
-      [[AP, 1.0]],
-    );
-    const args = (
-      impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
+    const impact = standards.nei(ctx, contribs(), 0.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
+    const args = (impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
     expect(args.base).toBeCloseTo(0.0, 10);
   });
 
   it("maps factor 1 → base 2.0", () => {
     const { ctx, standards } = makeCtx();
-    const impact = standards.nei(
-      ctx,
-      contribs(),
-      1.0,
-      Sign.Positive,
-      [[AP, 1.0]],
-    );
-    const args = (
-      impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
+    const impact = standards.nei(ctx, contribs(), 1.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
+    const args = (impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
     expect(args.base).toBeCloseTo(2.0, 10);
   });
 });
@@ -226,13 +206,10 @@ describe("maxAEIPADS", () => {
     const periods: DatePeriod[] = [
       { type: "duration", length: Duration.fromDays(2) },
     ];
-    const results = standards.maxAEIPADS(ctx, contribs(), periods, [
-      [AP, 1.0],
-    ]);
+    const results = standards.maxAEIPADS(ctx, contribs(), periods, [[AP, 1.0]]);
     expect(results.length).toBe(2);
     const names = results.map(
-      (r) =>
-        (r.DAH_meta["DAH_ir_source"] as Record<string, unknown>).name,
+      (r) => (r.DAH_meta["DAH_ir_source"] as Record<string, unknown>).name,
     );
     expect(names).toEqual(["aei", "pads"]);
   });
@@ -247,8 +224,7 @@ describe("cryPADS", () => {
     const results = standards.cryPADS(ctx, contribs(), periods, [[MP, 1.0]]);
     expect(results.length).toBe(2);
     const names = results.map(
-      (r) =>
-        (r.DAH_meta["DAH_ir_source"] as Record<string, unknown>).name,
+      (r) => (r.DAH_meta["DAH_ir_source"] as Record<string, unknown>).name,
     );
     expect(names).toEqual(["cry", "pads"]);
   });
@@ -288,12 +264,10 @@ describe("epi", () => {
     const { ctx, standards } = makeCtx();
     const low = standards.epi(ctx, contribs(), 0.0);
     const high = standards.epi(ctx, contribs(), 1.0);
-    const lowArgs = (
-      low.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
-    const highArgs = (
-      high.DAH_meta["DAH_ir_source"] as Record<string, unknown>
-    ).emotionArgs as { base: number };
+    const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
     expect(lowArgs.base).toBeCloseTo(3.5, 10);
     expect(highArgs.base).toBeCloseTo(4.5, 10);
   });
@@ -446,9 +420,9 @@ describe("meme", () => {
     const periods: DatePeriod[] = [
       { type: "duration", length: Duration.fromDays(1) },
     ];
-    expect(() =>
-      standards.meme(ctx, contribs(), 2.0, periods),
-    ).toThrow("not in [0, 2)");
+    expect(() => standards.meme(ctx, contribs(), 2.0, periods)).toThrow(
+      "not in [0, 2)",
+    );
   });
 
   it("throws for strength < 0", () => {
@@ -456,9 +430,9 @@ describe("meme", () => {
     const periods: DatePeriod[] = [
       { type: "duration", length: Duration.fromDays(1) },
     ];
-    expect(() =>
-      standards.meme(ctx, contribs(), -0.1, periods),
-    ).toThrow("not in [0, 2)");
+    expect(() => standards.meme(ctx, contribs(), -0.1, periods)).toThrow(
+      "not in [0, 2)",
+    );
   });
 });
 
@@ -537,9 +511,9 @@ describe("osuSong", () => {
 
   it("throws for out of range personal", () => {
     const { ctx, standards } = makeCtx();
-    expect(() =>
-      standards.osuSong(ctx, contribs(), 1.5, 0.5),
-    ).toThrow("out of bounds");
+    expect(() => standards.osuSong(ctx, contribs(), 1.5, 0.5)).toThrow(
+      "out of bounds",
+    );
   });
 });
 
