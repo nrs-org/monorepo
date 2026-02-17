@@ -4,8 +4,10 @@ import {
   makeImpactMeta,
   makeRelationMeta,
   ScalarMatrix,
+  newContext,
+  Vector,
 } from "@nrs-org/core";
-import type { Entry, Impact, Relation } from "@nrs-org/core";
+import type { Data, Entry, Impact, Relation } from "@nrs-org/core";
 import DAH_entry_roles from "../index";
 import type { EntryRole } from "../index";
 import DAH_factors from "@nrs-org/ext-dah-factors";
@@ -117,10 +119,10 @@ describe("ext-dah-entry-roles", () => {
     ];
     ext.addRole(e, "contributor1", roles);
     expect(e.DAH_meta.DAH_entry_roles).toBeDefined();
-    expect(e.DAH_meta.DAH_entry_roles?.roles["contributor1"]).toBeDefined();
-    expect(
-      e.DAH_meta.DAH_entry_roles?.roles["contributor1"]?.length,
-    ).toBeGreaterThan(0);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const metaObj = e.DAH_meta.DAH_entry_roles as any;
+    expect(metaObj.roles["contributor1"]).toBeDefined();
+    expect(metaObj.roles["contributor1"]?.length).toBeGreaterThan(0);
   });
 
   it("adds multiple roles to the same entry and contributor", () => {
@@ -144,7 +146,10 @@ describe("ext-dah-entry-roles", () => {
     ];
     ext.addRole(e, "contributor1", roles1);
     ext.addRole(e, "contributor1", roles2);
-    const contributorRoles = e.DAH_meta.DAH_entry_roles?.roles["contributor1"];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contributorRoles = (e.DAH_meta.DAH_entry_roles as any)?.roles[
+      "contributor1"
+    ];
     expect(contributorRoles).toBeDefined();
     // Should have roles for both image and vocal after expansion to atomic types
     if (contributorRoles) {
@@ -173,7 +178,10 @@ describe("ext-dah-entry-roles", () => {
     ];
     ext.addRole(e, "contributor1", roles1);
     ext.addRole(e, "contributor1", roles2);
-    const contributorRoles = e.DAH_meta.DAH_entry_roles?.roles["contributor1"];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contributorRoles = (e.DAH_meta.DAH_entry_roles as any)?.roles[
+      "contributor1"
+    ];
     expect(contributorRoles).toBeDefined();
     if (contributorRoles) {
       expect(contributorRoles.length).toBe(1);
@@ -186,7 +194,7 @@ describe("ext-dah-entry-roles", () => {
     const ext = DAH_entry_roles();
     const impact: Impact = {
       contributors: new Map(),
-      score: { data: [] },
+      score: new Vector([]),
       DAH_meta: makeImpactMeta(),
     };
     const roles: EntryRole[] = [
@@ -232,11 +240,14 @@ describe("ext-dah-entry-roles", () => {
       },
     ];
     ext.addRole(e, "contributor1", roles);
-    const contributorRoles = e.DAH_meta.DAH_entry_roles?.roles["contributor1"];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const contributorRoles = (e.DAH_meta.DAH_entry_roles as any)?.roles[
+      "contributor1"
+    ];
     expect(contributorRoles).toBeDefined();
     // inst expands to compose and arrange
     if (contributorRoles) {
-      const roleTypes = contributorRoles.map((r) => r.roleType);
+      const roleTypes = contributorRoles.map((r: EntryRole) => r.roleType);
       expect(roleTypes).toContain("compose");
       expect(roleTypes).toContain("arrange");
     }
@@ -244,7 +255,7 @@ describe("ext-dah-entry-roles", () => {
 });
 
 describe("preprocess integration", () => {
-  it("preprocesses data and creates relations for entries with roles", () => {
+  it("preprocesses data and creates relations for entries with roles", async () => {
     const ext = DAH_entry_roles();
     const factorsExt = DAH_factors();
     const containsExt = DAH_entry_contains();
@@ -268,32 +279,23 @@ describe("preprocess integration", () => {
       impacts: [],
       relations: [],
     };
-    const ctx = {
-      factorScoreCombineWeight: { data: [] },
-      api: {
-        newVector: (d: number[]) => ({ data: d }),
-        newScalarMatrix: (d: number) => new ScalarMatrix(d),
-        newDiagonalMatrix: (d: number[]) => ({ data: d }),
-        newRegularMatrix: (d: number[]) => ({ data: d }),
-      },
-      extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt },
-    };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [factorsExt, containsExt],
+    });
 
-    ext.preprocessData(
-      ctx as unknown as import("@nrs-org/core").Context,
-      data as unknown as import("@nrs-org/core").Data,
-    );
+    await ext.preprocessData?.(ctx, data);
     expect(data.relations.length).toBeGreaterThan(0);
   });
 
-  it("preprocesses impacts with roles", () => {
+  it("preprocesses impacts with roles", async () => {
     const ext = DAH_entry_roles();
     const impact: Impact = {
       contributors: new Map(),
-      score: { data: [] },
+      score: new Vector([]),
       DAH_meta: makeImpactMeta(),
     };
-    (impact.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+    impact.DAH_meta.DAH_entry_roles = {
       roles: {
         c1: [
           {
@@ -307,25 +309,16 @@ describe("preprocess integration", () => {
     };
 
     const data = { entries: new Map(), impacts: [impact], relations: [] };
-    const ctx = {
-      factorScoreCombineWeight: { data: [] },
-      api: {
-        newVector: (d: number[]) => ({ data: d }),
-        newScalarMatrix: (d: number) => new ScalarMatrix(d),
-        newDiagonalMatrix: (d: number[]) => ({ data: d }),
-        newRegularMatrix: (d: number[]) => ({ data: d }),
-      },
-      extensions: {},
-    };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [ext, DAH_factors()],
+    });
 
-    ext.preprocessData(
-      ctx as unknown as import("@nrs-org/core").Context,
-      data as unknown as import("@nrs-org/core").Data,
-    );
+    await ext.preprocessData?.(ctx, data);
     expect(impact.contributors.size).toBeGreaterThan(0);
   });
 
-  it("handles entry with title containing feat", () => {
+  it("handles entry with title containing feat", async () => {
     const ext = DAH_entry_roles();
     const factorsExt = DAH_factors();
     const containsExt = DAH_entry_contains();
@@ -351,25 +344,16 @@ describe("preprocess integration", () => {
       impacts: [],
       relations: [],
     };
-    const ctx = {
-      factorScoreCombineWeight: { data: [] },
-      api: {
-        newVector: (d: number[]) => ({ data: d }),
-        newScalarMatrix: (d: number) => new ScalarMatrix(d),
-        newDiagonalMatrix: (d: number[]) => ({ data: d }),
-        newRegularMatrix: (d: number[]) => ({ data: d }),
-      },
-      extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt },
-    };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [factorsExt, containsExt],
+    });
 
-    ext.preprocessData(
-      ctx as unknown as import("@nrs-org/core").Context,
-      data as unknown as import("@nrs-org/core").Data,
-    );
+    await ext.preprocessData?.(ctx, data);
     expect(data.relations.length).toBeGreaterThan(0);
   });
 
-  it("uses custom music variables from config and roles", () => {
+  it("uses custom music variables from config and roles", async () => {
     const ext = DAH_entry_roles({ defaultMusicVars: { vocallyrics: 0.7 } });
     const factorsExt = DAH_factors();
     const containsExt = DAH_entry_contains();
@@ -394,25 +378,16 @@ describe("preprocess integration", () => {
       impacts: [],
       relations: [],
     };
-    const ctx = {
-      factorScoreCombineWeight: { data: [] },
-      api: {
-        newVector: (d: number[]) => ({ data: d }),
-        newScalarMatrix: (d: number) => new ScalarMatrix(d),
-        newDiagonalMatrix: (d: number[]) => ({ data: d }),
-        newRegularMatrix: (d: number[]) => ({ data: d }),
-      },
-      extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt },
-    };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [factorsExt, containsExt],
+    });
 
-    ext.preprocessData(
-      ctx as unknown as import("@nrs-org/core").Context,
-      data as unknown as import("@nrs-org/core").Data,
-    );
+    await ext.preprocessData?.(ctx, data);
     expect(data.relations.length).toBeGreaterThan(0);
   });
 
-  it("tests all atomic role types", () => {
+  it("tests all atomic role types", async () => {
     const atomicRoles = [
       "total",
       "compose",
@@ -449,29 +424,17 @@ describe("preprocess integration", () => {
         impacts: [],
         relations: [],
       };
-      const ctx = {
-        factorScoreCombineWeight: { data: [] },
-        api: {
-          newVector: (d: number[]) => ({ data: d }),
-          newScalarMatrix: (d: number) => new ScalarMatrix(d),
-          newDiagonalMatrix: (d: number[]) => ({ data: d }),
-          newRegularMatrix: (d: number[]) => ({ data: d }),
-        },
-        extensions: {
-          DAH_factors: factorsExt,
-          DAH_entry_contains: containsExt,
-        },
-      };
+      const ctx = newContext({
+        factorScoreCombineWeight: new Vector([]),
+        extensions: [factorsExt, containsExt],
+      });
 
-      ext.preprocessData(
-        ctx as unknown as import("@nrs-org/core").Context,
-        data as unknown as import("@nrs-org/core").Data,
-      );
+      await ext.preprocessData?.(ctx, data);
       expect(data.relations.length).toBeGreaterThan(0);
     }
   });
 
-  it("handles multiple contributors with different roles", () => {
+  it("handles multiple contributors with different roles", async () => {
     const ext = DAH_entry_roles();
     const factorsExt = DAH_factors();
     const containsExt = DAH_entry_contains();
@@ -498,26 +461,17 @@ describe("preprocess integration", () => {
       },
     };
 
-    const data = {
+    const data: Data = {
       entries: new Map([["e1", entry]]),
       impacts: [],
       relations: [],
     };
-    const ctx = {
-      factorScoreCombineWeight: { data: [] },
-      api: {
-        newVector: (d: number[]) => ({ data: d }),
-        newScalarMatrix: (d: number) => new ScalarMatrix(d),
-        newDiagonalMatrix: (d: number[]) => ({ data: d }),
-        newRegularMatrix: (d: number[]) => ({ data: d }),
-      },
-      extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt },
-    };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [factorsExt, containsExt],
+    });
 
-    ext.preprocessData(
-      ctx as unknown as import("@nrs-org/core").Context,
-      data as unknown as import("@nrs-org/core").Data,
-    );
+    await ext.preprocessData?.(ctx, data);
     expect(data.relations.length).toBeGreaterThan(0);
     const rel = data.relations[0];
     if (rel) expect(rel.contributors.size).toBe(2);
