@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { newContext, newZeroVector, ScalarMatrix, DiagonalMatrix } from "@nrs-org/core";
-import DAH_factors, { AP, MP, AU, CU, CP, MU, AM, AV, AL, Boredom, Additional } from "@nrs-org/ext-dah-factors";
+import { newContext, ScalarMatrix, DiagonalMatrix } from "@nrs-org/core";
+import DAH_factors, { AP, MP, AU, AM, AV, AL, Boredom, Additional } from "@nrs-org/ext-dah-factors";
 import DAH_standards, {
   Sign,
   VisualType,
@@ -25,7 +25,7 @@ describe("DAH_standards", () => {
   it("has correct name and dependencies", () => {
     const ext = DAH_standards();
     expect(ext.name).toBe("DAH_standards");
-    expect(ext.dependencies!()).toEqual(["DAH_factors"]);
+    expect(ext.dependencies?.()).toEqual(["DAH_factors"]);
   });
 });
 
@@ -124,7 +124,7 @@ describe("pads", () => {
       [AP, 1.0],
     ]);
     expect(impactShort.score.data[AP.factorIndex]).toBeCloseTo(
-      impactLong.score.data[AP.factorIndex]!,
+      impactLong.score.data[AP.factorIndex] ?? 0,
       10,
     );
   });
@@ -520,7 +520,7 @@ describe("visual", () => {
       0.0,
     );
     expect(animated.score.data[AV.factorIndex]).toBeGreaterThan(
-      albumArt.score.data[AV.factorIndex]!,
+      albumArt.score.data[AV.factorIndex] ?? 0,
     );
   });
 });
@@ -569,7 +569,7 @@ describe("featureMusic", () => {
     const { ctx, standards } = makeCtx();
     const relation = standards.featureMusic(ctx, contribs(), "ref1");
     expect(relation.references.has("ref1")).toBe(true);
-    const matrix = relation.references.get("ref1")!;
+    const matrix = relation.references.get("ref1");
     expect(matrix).toBeInstanceOf(DiagonalMatrix);
     if (matrix instanceof DiagonalMatrix) {
       expect(matrix.data[AM.factorIndex]).toBe(0.2);
@@ -586,7 +586,7 @@ describe("remix", () => {
     const { ctx, standards } = makeCtx();
     const relation = standards.remix(ctx, contribs(), "ref1");
     expect(relation.references.has("ref1")).toBe(true);
-    const matrix = relation.references.get("ref1")!;
+    const matrix = relation.references.get("ref1");
     expect(matrix).toBeInstanceOf(ScalarMatrix);
     if (matrix instanceof ScalarMatrix) {
       expect(matrix.data).toBe(0.2);
@@ -600,7 +600,7 @@ describe("killedBy", () => {
   it("creates a diagonal relation matrix with weighted factors", () => {
     const { ctx, standards } = makeCtx();
     const relation = standards.killedBy(ctx, contribs(), "ref1", 1.0, 1.0);
-    const matrix = relation.references.get("ref1")!;
+    const matrix = relation.references.get("ref1");
     expect(matrix).toBeInstanceOf(DiagonalMatrix);
     if (matrix instanceof DiagonalMatrix) {
       const base = 0.4;
@@ -617,7 +617,7 @@ describe("gateOpen", () => {
   it("creates a relation with scalar 0.0", () => {
     const { ctx, standards } = makeCtx();
     const relation = standards.gateOpen(ctx, contribs(), "ref1");
-    const matrix = relation.references.get("ref1")!;
+    const matrix = relation.references.get("ref1");
     expect(matrix).toBeInstanceOf(ScalarMatrix);
     if (matrix instanceof ScalarMatrix) {
       expect(matrix.data).toBe(0.0);
