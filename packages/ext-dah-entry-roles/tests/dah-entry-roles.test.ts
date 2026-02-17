@@ -3,6 +3,8 @@ import { makeEntryMeta, makeImpactMeta, makeRelationMeta, ScalarMatrix } from "@
 import type { Entry, Impact, Relation } from "@nrs-org/core";
 import DAH_entry_roles from "../index";
 import type { EntryRole } from "../index";
+import DAH_factors from "@nrs-org/ext-dah-factors";
+import DAH_entry_contains from "@nrs-org/ext-dah-entry-contains";
 
 describe("ext-dah-entry-roles", () => {
   it("constructs and has correct dependencies", () => {
@@ -233,3 +235,138 @@ describe("ext-dah-entry-roles", () => {
     }
   });
 });
+
+  describe("preprocess integration", () => {
+    it("preprocesses data and creates relations for entries with roles", () => {
+      const ext = DAH_entry_roles();
+      const factorsExt = DAH_factors();
+      const containsExt = DAH_entry_contains();
+      
+      const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: { c1: [{ roleType: "total", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "total" }] }
+      };
+
+      const data = { entries: new Map([["e1", entry]]), impacts: [], relations: [] };
+      const ctx = { 
+        factorScoreCombineWeight: { data: [] }, 
+        api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+        extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt }
+      };
+      
+      ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+      expect(data.relations.length).toBeGreaterThan(0);
+    });
+
+    it("preprocesses impacts with roles", () => {
+      const ext = DAH_entry_roles();
+      const impact: Impact = { contributors: new Map(), score: { data: [] }, DAH_meta: makeImpactMeta() };
+      (impact.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: { c1: [{ roleType: "total", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "total" }] }
+      };
+
+      const data = { entries: new Map(), impacts: [impact], relations: [] };
+      const ctx = { 
+        factorScoreCombineWeight: { data: [] }, 
+        api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+        extensions: {}
+      };
+      
+      ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+      expect(impact.contributors.size).toBeGreaterThan(0);
+    });
+
+    it("handles entry with title containing feat", () => {
+      const ext = DAH_entry_roles();
+      const factorsExt = DAH_factors();
+      const containsExt = DAH_entry_contains();
+      
+      const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_title = "Song (feat. Artist)";
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: { c1: [{ roleType: "image", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "image" }] }
+      };
+
+      const data = { entries: new Map([["e1", entry]]), impacts: [], relations: [] };
+      const ctx = { 
+        factorScoreCombineWeight: { data: [] }, 
+        api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+        extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt }
+      };
+      
+      ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+      expect(data.relations.length).toBeGreaterThan(0);
+    });
+
+    it("uses custom music variables from config and roles", () => {
+      const ext = DAH_entry_roles({ defaultMusicVars: { vocallyrics: 0.7 } });
+      const factorsExt = DAH_factors();
+      const containsExt = DAH_entry_contains();
+      
+      const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: { c1: [{ roleType: "vocal", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "vocal" }] },
+        musicVars: { emolyrics: 0.3 }
+      };
+
+      const data = { entries: new Map([["e1", entry]]), impacts: [], relations: [] };
+      const ctx = { 
+        factorScoreCombineWeight: { data: [] }, 
+        api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+        extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt }
+      };
+      
+      ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+      expect(data.relations.length).toBeGreaterThan(0);
+    });
+
+    it("tests all atomic role types", () => {
+      const atomicRoles = ["total", "compose", "arrange", "image", "vocal", "lyrics", "mv", "albumart", "image_feat", "inst_perform"];
+      for (const roleType of atomicRoles) {
+        const ext = DAH_entry_roles();
+        const factorsExt = DAH_factors();
+        const containsExt = DAH_entry_contains();
+        
+        const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+        (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+          roles: { c1: [{ roleType, factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: roleType }] }
+        };
+
+        const data = { entries: new Map([["e1", entry]]), impacts: [], relations: [] };
+        const ctx = { 
+          factorScoreCombineWeight: { data: [] }, 
+          api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+          extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt }
+        };
+        
+        ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+        expect(data.relations.length).toBeGreaterThan(0);
+      }
+    });
+
+    it("handles multiple contributors with different roles", () => {
+      const ext = DAH_entry_roles();
+      const factorsExt = DAH_factors();
+      const containsExt = DAH_entry_contains();
+      
+      const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: {
+          composer: [{ roleType: "compose", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "compose" }],
+          vocalist: [{ roleType: "vocal", factor: new ScalarMatrix(1), multiplyFactor: 1, expressionString: "vocal" }]
+        }
+      };
+
+      const data = { entries: new Map([["e1", entry]]), impacts: [], relations: [] };
+      const ctx = { 
+        factorScoreCombineWeight: { data: [] }, 
+        api: { newVector: (d: number[]) => ({data:d}), newScalarMatrix: (d: number) => new ScalarMatrix(d), newDiagonalMatrix: (d: number[]) => ({data:d}), newRegularMatrix: (d: number[]) => ({data:d}) },
+        extensions: { DAH_factors: factorsExt, DAH_entry_contains: containsExt }
+      };
+      
+      ext.preprocessData(ctx as unknown as import("@nrs-org/core").Context, data as unknown as import("@nrs-org/core").Data);
+      expect(data.relations.length).toBeGreaterThan(0);
+      const rel = data.relations[0];
+      if (rel) expect(rel.contributors.size).toBe(2);
+    });
+  });
