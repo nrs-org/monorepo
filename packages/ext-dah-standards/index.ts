@@ -756,7 +756,8 @@ export default function DAH_standards(
     ): Impact {
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = padsCoeffA * Math.pow(Math.min(padsMaxDays, days), padsCoeffP);
+      const base =
+        padsCoeffA * Math.pow(Math.min(padsMaxDays, days), padsCoeffP);
 
       const impact = this.emotion(
         context,
@@ -813,7 +814,8 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, aeiOutMin, aeiOutMax) * sign;
+      const base =
+        mapClampThrow(Math.abs(factor), 0.0, 1.0, aeiOutMin, aeiOutMax) * sign;
       return this.xei(
         context,
         contributors,
@@ -832,7 +834,8 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, neiOutMin, neiOutMax) * sign;
+      const base =
+        mapClampThrow(Math.abs(factor), 0.0, 1.0, neiOutMin, neiOutMax) * sign;
       return this.xei(
         context,
         contributors,
@@ -876,7 +879,8 @@ export default function DAH_standards(
     ): Impact {
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = waifuMultiplier * Math.pow(days / waifuDayDivisor, MP.factorWeight);
+      const base =
+        waifuMultiplier * Math.pow(days / waifuDayDivisor, MP.factorWeight);
       return this.emotion(context, contributors, base, [[MP, 1.0]], "waifu", {
         waifuArgs: {
           waifu,
@@ -899,7 +903,13 @@ export default function DAH_standards(
     },
 
     jumpscare(context: Context, contributors: Contributors): Impact {
-      return this.emotion(context, contributors, jumpscareBase, [[MP, 1.0]], "jumpscare");
+      return this.emotion(
+        context,
+        contributors,
+        jumpscareBase,
+        [[MP, 1.0]],
+        "jumpscare",
+      );
     },
 
     sleeplessNight(context: Context, contributors: Contributors): Impact {
@@ -927,7 +937,12 @@ export default function DAH_standards(
     ): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [[Additional, newField ? interestFieldNewScore : interestFieldExistingScore]]),
+        score: vectorFromFactors(context, [
+          [
+            Additional,
+            newField ? interestFieldNewScore : interestFieldExistingScore,
+          ],
+        ]),
         DAH_meta: impactMeta({ name: "interestField" }),
       };
     },
@@ -950,7 +965,11 @@ export default function DAH_standards(
         } else if (duration < consumedShortThreshold) {
           return ["short", consumedShortBaseScore, consumedShortBaseDuration];
         } else {
-          return ["long", consumedLongBaseScore, averageAnimeEpisodeDuration * consumedLongEpisodeMultiplier];
+          return [
+            "long",
+            consumedLongBaseScore,
+            averageAnimeEpisodeDuration * consumedLongEpisodeMultiplier,
+          ];
         }
       })();
 
@@ -1014,12 +1033,17 @@ export default function DAH_standards(
       periods: DatePeriod[],
     ): Impact {
       if (strength < 0.0 || strength >= memeMaxStrength) {
-        throw new Error(`strength=${strength} not in [0, ${memeMaxStrength}) range`);
+        throw new Error(
+          `strength=${strength} not in [0, ${memeMaxStrength}) range`,
+        );
       }
 
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = strength * Math.pow(days / memeDayDivisor, AP.factorWeight) * memeMultiplier;
+      const base =
+        strength *
+        Math.pow(days / memeDayDivisor, AP.factorWeight) *
+        memeMultiplier;
 
       return this.emotion(context, contributors, base, [[AP, 1.0]], "meme", {
         memeArgs: {
@@ -1069,7 +1093,9 @@ export default function DAH_standards(
       unique: number,
     ): Impact {
       const visualScore =
-        ((base * (unique + visualUniqueOffset)) / visualDivisor) * visualType.factor * visualMultiplier;
+        ((base * (unique + visualUniqueOffset)) / visualDivisor) *
+        visualType.factor *
+        visualMultiplier;
 
       return {
         contributors,
@@ -1091,8 +1117,20 @@ export default function DAH_standards(
       personal: number,
       community: number,
     ): Impact {
-      const personalFactor = mapClampThrow(personal, 0.0, 1.0, 0.0, osuPersonalMax);
-      const communityFactor = mapClampThrow(community, 0.0, 1.0, 0.0, osuCommunityMax);
+      const personalFactor = mapClampThrow(
+        personal,
+        0.0,
+        1.0,
+        0.0,
+        osuPersonalMax,
+      );
+      const communityFactor = mapClampThrow(
+        community,
+        0.0,
+        1.0,
+        0.0,
+        osuCommunityMax,
+      );
 
       return {
         contributors,

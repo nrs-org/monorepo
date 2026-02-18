@@ -658,7 +658,10 @@ describe("config overrides", () => {
   });
 
   it("overrides epiOutMin and epiOutMax", () => {
-    const { ctx, standards } = makeCustomCtx({ epiOutMin: 1.0, epiOutMax: 2.0 });
+    const { ctx, standards } = makeCustomCtx({
+      epiOutMin: 1.0,
+      epiOutMax: 2.0,
+    });
     const low = standards.epi(ctx, contribs(), 0.0);
     const high = standards.epi(ctx, contribs(), 1.0);
     const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
@@ -670,9 +673,14 @@ describe("config overrides", () => {
   });
 
   it("overrides aeiOutMin and aeiOutMax", () => {
-    const { ctx, standards } = makeCustomCtx({ aeiOutMin: 5.0, aeiOutMax: 10.0 });
+    const { ctx, standards } = makeCustomCtx({
+      aeiOutMin: 5.0,
+      aeiOutMax: 10.0,
+    });
     const low = standards.aei(ctx, contribs(), 0.0, Sign.Positive, [[AP, 1.0]]);
-    const high = standards.aei(ctx, contribs(), 1.0, Sign.Positive, [[AP, 1.0]]);
+    const high = standards.aei(ctx, contribs(), 1.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
     const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
       .emotionArgs as { base: number };
     const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
@@ -682,9 +690,14 @@ describe("config overrides", () => {
   });
 
   it("overrides neiOutMin and neiOutMax", () => {
-    const { ctx, standards } = makeCustomCtx({ neiOutMin: 1.0, neiOutMax: 5.0 });
+    const { ctx, standards } = makeCustomCtx({
+      neiOutMin: 1.0,
+      neiOutMax: 5.0,
+    });
     const low = standards.nei(ctx, contribs(), 0.0, Sign.Positive, [[AP, 1.0]]);
-    const high = standards.nei(ctx, contribs(), 1.0, Sign.Positive, [[AP, 1.0]]);
+    const high = standards.nei(ctx, contribs(), 1.0, Sign.Positive, [
+      [AP, 1.0],
+    ]);
     const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
       .emotionArgs as { base: number };
     const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
@@ -705,10 +718,14 @@ describe("config overrides", () => {
       interestFieldExistingScore: 3.0,
     });
     expect(
-      standards.interestField(ctx, contribs(), true).score.data[Additional.factorIndex],
+      standards.interestField(ctx, contribs(), true).score.data[
+        Additional.factorIndex
+      ],
     ).toBe(5.0);
     expect(
-      standards.interestField(ctx, contribs(), false).score.data[Additional.factorIndex],
+      standards.interestField(ctx, contribs(), false).score.data[
+        Additional.factorIndex
+      ],
     ).toBe(3.0);
   });
 
@@ -813,9 +830,7 @@ describe("config overrides", () => {
       { type: "duration", length: Duration.fromDays(30) },
     ];
     // 2.5 would fail with default max 2.0 but passes with 3.0
-    expect(() =>
-      standards.meme(ctx, contribs(), 2.5, periods),
-    ).not.toThrow();
+    expect(() => standards.meme(ctx, contribs(), 2.5, periods)).not.toThrow();
   });
 
   it("overrides visual parameters", () => {

@@ -126,6 +126,18 @@
         "@nrs-org/ext-dah-factors": "*",
       },
     },
+    "packages/ext-dah-standards": {
+      "name": "@nrs-org/ext-dah-standards",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/bun": "^1.3.9",
+      },
+      "peerDependencies": {
+        "@nrs-org/core": "*",
+        "@nrs-org/ext-dah-factors": "*",
+        "@nrs-org/ext-dah-ir-source": "*",
+      },
+    },
     "packages/ext-dah-validator-suppress": {
       "name": "ext-dah-validator-suppress",
       "devDependencies": {
@@ -187,6 +199,8 @@
     "@nrs-org/ext-dah-ir-source": ["@nrs-org/ext-dah-ir-source@workspace:packages/ext-dah-ir-source"],
 
     "@nrs-org/ext-dah-overall-score": ["@nrs-org/ext-dah-overall-score@workspace:packages/ext-dah-overall-score"],
+
+    "@nrs-org/ext-dah-standards": ["@nrs-org/ext-dah-standards@workspace:packages/ext-dah-standards"],
 
     "@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 
