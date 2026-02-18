@@ -148,7 +148,7 @@ export interface KilledByWeights {
   Additional?: number;
 }
 
-export interface ExtConfigDAHStandards {
+export interface DAH_standardsConfig {
   /** Average anime episode duration in milliseconds (default: 20 minutes) */
   averageAnimeEpisodeDuration?: DurationMs;
 
@@ -559,7 +559,7 @@ export type DAH_standards = Extension & {
 // ---------------------------------------------------------------------------
 
 export default function DAH_standards(
-  config: ExtConfigDAHStandards = {},
+  config: DAH_standardsConfig = {},
 ): DAH_standards {
   const averageAnimeEpisodeDuration =
     config.averageAnimeEpisodeDuration ?? Duration.fromMinutes(20);
