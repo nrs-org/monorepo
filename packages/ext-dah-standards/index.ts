@@ -133,9 +133,136 @@ export class VisualType {
 // Config
 // ---------------------------------------------------------------------------
 
+/** Per-factor weights used by the killedBy relation. */
+export interface KilledByWeights {
+  AP?: number;
+  AU?: number;
+  CP?: number;
+  CU?: number;
+  MP?: number;
+  MU?: number;
+  AV?: number;
+  AL?: number;
+  AM?: number;
+  Boredom?: number;
+  Additional?: number;
+}
+
 export interface ExtConfigDAHStandards {
   /** Average anime episode duration in milliseconds (default: 20 minutes) */
   averageAnimeEpisodeDuration?: DurationMs;
+
+  /** Exponent used when combining emotion weights (default: 0.9) */
+  emotionPowerExponent?: number;
+
+  /** Base score for cry impacts (default: 4.0) */
+  cryBase?: number;
+
+  /** PADS amplitude coefficient (default: 0.3) */
+  padsCoeffA?: number;
+  /** PADS power coefficient (default: 1.3) */
+  padsCoeffP?: number;
+  /** PADS maximum days cap (default: 10) */
+  padsMaxDays?: number;
+
+  /** AEI output minimum (factor=0) (default: 2.0) */
+  aeiOutMin?: number;
+  /** AEI output maximum (factor=1) (default: 3.0) */
+  aeiOutMax?: number;
+
+  /** NEI output minimum (factor=0) (default: 0.0) */
+  neiOutMin?: number;
+  /** NEI output maximum (factor=1) (default: 2.0) */
+  neiOutMax?: number;
+
+  /** Waifu base multiplier (default: 1.2) */
+  waifuMultiplier?: number;
+  /** Waifu day divisor (default: 90) */
+  waifuDayDivisor?: number;
+
+  /** EHI base score (default: 3.5) */
+  ehiBase?: number;
+
+  /** EPI output minimum (factor=0) (default: 3.5) */
+  epiOutMin?: number;
+  /** EPI output maximum (factor=1) (default: 4.5) */
+  epiOutMax?: number;
+
+  /** Jumpscare base score (default: 1.0) */
+  jumpscareBase?: number;
+
+  /** Sleepless night base score (default: 4.0) */
+  sleeplessNightBase?: number;
+
+  /** Politics additional score (default: 0.75) */
+  politicsScore?: number;
+
+  /** Interest field score for a new field (default: 2.0) */
+  interestFieldNewScore?: number;
+  /** Interest field score for an existing field (default: 1.0) */
+  interestFieldExistingScore?: number;
+
+  /** Consumed tiny threshold in ms (default: 10 minutes) */
+  consumedTinyThreshold?: DurationMs;
+  /** Consumed tiny base score (default: 0.1) */
+  consumedTinyBaseScore?: number;
+  /** Consumed tiny base duration in ms (default: 5 minutes) */
+  consumedTinyBaseDuration?: DurationMs;
+  /** Consumed short threshold in ms (default: 2 hours) */
+  consumedShortThreshold?: DurationMs;
+  /** Consumed short base score (default: 0.3) */
+  consumedShortBaseScore?: number;
+  /** Consumed short base duration in ms (default: 2 hours) */
+  consumedShortBaseDuration?: DurationMs;
+  /** Consumed long base score (default: 1.0) */
+  consumedLongBaseScore?: number;
+  /** Consumed long episode multiplier (default: 12) */
+  consumedLongEpisodeMultiplier?: number;
+
+  /** Dropped boredom score (default: -0.5) */
+  droppedScore?: number;
+
+  /** Meme day divisor (default: 120) */
+  memeDayDivisor?: number;
+  /** Meme final multiplier (default: 4.0) */
+  memeMultiplier?: number;
+  /** Meme max strength (default: 2.0) */
+  memeMaxStrength?: number;
+
+  /** Music score multiplier (default: 3.0) */
+  musicMultiplier?: number;
+
+  /** Visual unique-offset added to unique parameter (default: 2.0) */
+  visualUniqueOffset?: number;
+  /** Visual divisor (default: 3.0) */
+  visualDivisor?: number;
+  /** Visual final multiplier (default: 2.0) */
+  visualMultiplier?: number;
+
+  /** osuSong personal max output (default: 0.5) */
+  osuPersonalMax?: number;
+  /** osuSong community max output (default: 0.2) */
+  osuCommunityMax?: number;
+
+  /** Writing base multiplier M (default: 4.0) */
+  writingMultiplier?: number;
+
+  /** featureMusic AM relation weight (default: 0.2) */
+  featureMusicWeight?: number;
+
+  /** remix scalar weight (default: 0.2) */
+  remixWeight?: number;
+
+  /** killedBy base multiplier (default: 0.4) */
+  killedByBase?: number;
+  /** killedBy per-factor weights */
+  killedByWeights?: KilledByWeights;
+
+  /** gateOpen scalar weight (default: 0.0) */
+  gateOpenWeight?: number;
+
+  /** IR source metadata version string (default: "1.1.1") */
+  irVersion?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -437,6 +564,69 @@ export default function DAH_standards(
   const averageAnimeEpisodeDuration =
     config.averageAnimeEpisodeDuration ?? Duration.fromMinutes(20);
 
+  // Resolve all configurable constants with defaults
+  const emotionPowerExponent = config.emotionPowerExponent ?? 0.9;
+  const cryBase = config.cryBase ?? 4.0;
+  const padsCoeffA = config.padsCoeffA ?? 0.3;
+  const padsCoeffP = config.padsCoeffP ?? 1.3;
+  const padsMaxDays = config.padsMaxDays ?? 10;
+  const aeiOutMin = config.aeiOutMin ?? 2.0;
+  const aeiOutMax = config.aeiOutMax ?? 3.0;
+  const neiOutMin = config.neiOutMin ?? 0.0;
+  const neiOutMax = config.neiOutMax ?? 2.0;
+  const waifuMultiplier = config.waifuMultiplier ?? 1.2;
+  const waifuDayDivisor = config.waifuDayDivisor ?? 90;
+  const ehiBase = config.ehiBase ?? 3.5;
+  const epiOutMin = config.epiOutMin ?? 3.5;
+  const epiOutMax = config.epiOutMax ?? 4.5;
+  const jumpscareBase = config.jumpscareBase ?? 1.0;
+  const sleeplessNightBase = config.sleeplessNightBase ?? 4.0;
+  const politicsScore = config.politicsScore ?? 0.75;
+  const interestFieldNewScore = config.interestFieldNewScore ?? 2.0;
+  const interestFieldExistingScore = config.interestFieldExistingScore ?? 1.0;
+  const consumedTinyThreshold =
+    config.consumedTinyThreshold ?? Duration.fromMinutes(10);
+  const consumedTinyBaseScore = config.consumedTinyBaseScore ?? 0.1;
+  const consumedTinyBaseDuration =
+    config.consumedTinyBaseDuration ?? Duration.fromMinutes(5);
+  const consumedShortThreshold =
+    config.consumedShortThreshold ?? Duration.fromHours(2);
+  const consumedShortBaseScore = config.consumedShortBaseScore ?? 0.3;
+  const consumedShortBaseDuration =
+    config.consumedShortBaseDuration ?? Duration.fromHours(2);
+  const consumedLongBaseScore = config.consumedLongBaseScore ?? 1.0;
+  const consumedLongEpisodeMultiplier =
+    config.consumedLongEpisodeMultiplier ?? 12;
+  const droppedScore = config.droppedScore ?? -0.5;
+  const memeDayDivisor = config.memeDayDivisor ?? 120;
+  const memeMultiplier = config.memeMultiplier ?? 4.0;
+  const memeMaxStrength = config.memeMaxStrength ?? 2.0;
+  const musicMultiplier = config.musicMultiplier ?? 3.0;
+  const visualUniqueOffset = config.visualUniqueOffset ?? 2.0;
+  const visualDivisor = config.visualDivisor ?? 3.0;
+  const visualMultiplier = config.visualMultiplier ?? 2.0;
+  const osuPersonalMax = config.osuPersonalMax ?? 0.5;
+  const osuCommunityMax = config.osuCommunityMax ?? 0.2;
+  const writingMultiplier = config.writingMultiplier ?? 4.0;
+  const featureMusicWeight = config.featureMusicWeight ?? 0.2;
+  const remixWeight = config.remixWeight ?? 0.2;
+  const killedByBase = config.killedByBase ?? 0.4;
+  const killedByWeightsResolved = {
+    AP: config.killedByWeights?.AP ?? 0.2,
+    AU: config.killedByWeights?.AU ?? 0.1,
+    CP: config.killedByWeights?.CP ?? 0.05,
+    CU: config.killedByWeights?.CU ?? 0.05,
+    MP: config.killedByWeights?.MP ?? 0.2,
+    MU: config.killedByWeights?.MU ?? 0.1,
+    AV: config.killedByWeights?.AV ?? 0.0,
+    AL: config.killedByWeights?.AL ?? 0.1,
+    AM: config.killedByWeights?.AM ?? 0.1,
+    Boredom: config.killedByWeights?.Boredom ?? 0.1,
+    Additional: config.killedByWeights?.Additional ?? 0.0,
+  };
+  const gateOpenWeight = config.gateOpenWeight ?? 0.0;
+  const irVersion = config.irVersion ?? "1.1.1";
+
   // -- private helpers --
 
   function irMeta(
@@ -445,7 +635,7 @@ export default function DAH_standards(
     return {
       DAH_ir_source: {
         extension: "DAH_standards",
-        version: "1.1.1",
+        version: irVersion,
         ...meta,
       },
     };
@@ -476,7 +666,7 @@ export default function DAH_standards(
     const vec = newZeroVector(context);
     for (const [emo, f] of emotions) {
       vec.data[emo.factorIndex] =
-        (baseScore * Math.pow(f, 0.9)) / combinedFactor;
+        (baseScore * Math.pow(f, emotionPowerExponent)) / combinedFactor;
     }
     return vec;
   }
@@ -554,7 +744,7 @@ export default function DAH_standards(
       contributors: Contributors,
       emotions: WeightedEmotions,
     ): Impact {
-      return this.emotion(context, contributors, 4.0, emotions, "cry");
+      return this.emotion(context, contributors, cryBase, emotions, "cry");
     },
 
     pads(
@@ -564,11 +754,9 @@ export default function DAH_standards(
       emotions: WeightedEmotions,
       singlePADS = true,
     ): Impact {
-      const a = 0.3;
-      const p = 1.3;
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = a * Math.pow(Math.min(10, days), p);
+      const base = padsCoeffA * Math.pow(Math.min(padsMaxDays, days), padsCoeffP);
 
       const impact = this.emotion(
         context,
@@ -625,7 +813,7 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, 2.0, 3.0) * sign;
+      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, aeiOutMin, aeiOutMax) * sign;
       return this.xei(
         context,
         contributors,
@@ -644,7 +832,7 @@ export default function DAH_standards(
       sign: Sign,
       emotions: WeightedEmotions,
     ): Impact {
-      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, 0.0, 2.0) * sign;
+      const base = mapClampThrow(Math.abs(factor), 0.0, 1.0, neiOutMin, neiOutMax) * sign;
       return this.xei(
         context,
         contributors,
@@ -688,7 +876,7 @@ export default function DAH_standards(
     ): Impact {
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = 1.2 * Math.pow(days / 90, MP.factorWeight);
+      const base = waifuMultiplier * Math.pow(days / waifuDayDivisor, MP.factorWeight);
       return this.emotion(context, contributors, base, [[MP, 1.0]], "waifu", {
         waifuArgs: {
           waifu,
@@ -700,25 +888,25 @@ export default function DAH_standards(
     },
 
     ehi(context: Context, contributors: Contributors): Impact {
-      return this.emotion(context, contributors, 3.5, [[AP, 1.0]], "ehi");
+      return this.emotion(context, contributors, ehiBase, [[AP, 1.0]], "ehi");
     },
 
     epi(context: Context, contributors: Contributors, factor: number): Impact {
-      const base = mapClampThrow(factor, 0.0, 1.0, 3.5, 4.5);
+      const base = mapClampThrow(factor, 0.0, 1.0, epiOutMin, epiOutMax);
       return this.emotion(context, contributors, base, [[AP, 1.0]], "epi", {
         epiArgs: { factor },
       });
     },
 
     jumpscare(context: Context, contributors: Contributors): Impact {
-      return this.emotion(context, contributors, 1.0, [[MP, 1.0]], "jumpscare");
+      return this.emotion(context, contributors, jumpscareBase, [[MP, 1.0]], "jumpscare");
     },
 
     sleeplessNight(context: Context, contributors: Contributors): Impact {
       return this.emotion(
         context,
         contributors,
-        4.0,
+        sleeplessNightBase,
         [[MP, 1.0]],
         "sleeplessNight",
       );
@@ -727,7 +915,7 @@ export default function DAH_standards(
     politics(context: Context, contributors: Contributors): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [[Additional, 0.75]]),
+        score: vectorFromFactors(context, [[Additional, politicsScore]]),
         DAH_meta: impactMeta({ name: "politics" }),
       };
     },
@@ -739,7 +927,7 @@ export default function DAH_standards(
     ): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [[Additional, newField ? 2.0 : 1.0]]),
+        score: vectorFromFactors(context, [[Additional, newField ? interestFieldNewScore : interestFieldExistingScore]]),
         DAH_meta: impactMeta({ name: "interestField" }),
       };
     },
@@ -757,12 +945,12 @@ export default function DAH_standards(
         number,
         DurationMs,
       ] => {
-        if (duration < Duration.fromMinutes(10)) {
-          return ["tiny", 0.1, Duration.fromMinutes(5)];
-        } else if (duration < Duration.fromHours(2)) {
-          return ["short", 0.3, Duration.fromHours(2)];
+        if (duration < consumedTinyThreshold) {
+          return ["tiny", consumedTinyBaseScore, consumedTinyBaseDuration];
+        } else if (duration < consumedShortThreshold) {
+          return ["short", consumedShortBaseScore, consumedShortBaseDuration];
         } else {
-          return ["long", 1.0, averageAnimeEpisodeDuration * 12];
+          return ["long", consumedLongBaseScore, averageAnimeEpisodeDuration * consumedLongEpisodeMultiplier];
         }
       })();
 
@@ -814,7 +1002,7 @@ export default function DAH_standards(
     dropped(context: Context, contributors: Contributors): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [[Boredom, -0.5]]),
+        score: vectorFromFactors(context, [[Boredom, droppedScore]]),
         DAH_meta: impactMeta({ name: "dropped" }),
       };
     },
@@ -825,13 +1013,13 @@ export default function DAH_standards(
       strength: number,
       periods: DatePeriod[],
     ): Impact {
-      if (strength < 0.0 || strength >= 2.0) {
-        throw new Error(`strength=${strength} not in [0, 2) range`);
+      if (strength < 0.0 || strength >= memeMaxStrength) {
+        throw new Error(`strength=${strength} not in [0, ${memeMaxStrength}) range`);
       }
 
       const dur = periodsLength(periods);
       const days = Duration.toDays(dur);
-      const base = strength * Math.pow(days / 120, AP.factorWeight) * 4.0;
+      const base = strength * Math.pow(days / memeDayDivisor, AP.factorWeight) * memeMultiplier;
 
       return this.emotion(context, contributors, base, [[AP, 1.0]], "meme", {
         memeArgs: {
@@ -865,7 +1053,7 @@ export default function DAH_standards(
     ): Impact {
       return {
         contributors,
-        score: vectorFromFactors(context, [[AM, musicBase * 3.0]]),
+        score: vectorFromFactors(context, [[AM, musicBase * musicMultiplier]]),
         DAH_meta: impactMeta({
           name: "music",
           musicArgs: { musicBase },
@@ -881,7 +1069,7 @@ export default function DAH_standards(
       unique: number,
     ): Impact {
       const visualScore =
-        ((base * (unique + 2.0)) / 3.0) * visualType.factor * 2.0;
+        ((base * (unique + visualUniqueOffset)) / visualDivisor) * visualType.factor * visualMultiplier;
 
       return {
         contributors,
@@ -903,8 +1091,8 @@ export default function DAH_standards(
       personal: number,
       community: number,
     ): Impact {
-      const personalFactor = mapClampThrow(personal, 0.0, 1.0, 0.0, 0.5);
-      const communityFactor = mapClampThrow(community, 0.0, 1.0, 0.0, 0.2);
+      const personalFactor = mapClampThrow(personal, 0.0, 1.0, 0.0, osuPersonalMax);
+      const communityFactor = mapClampThrow(community, 0.0, 1.0, 0.0, osuCommunityMax);
 
       return {
         contributors,
@@ -937,9 +1125,8 @@ export default function DAH_standards(
       pacing = mapClampThrow(pacing, 0.0, 1.0, 0.0, 1.0);
       originality = mapClampThrow(originality, 0.0, 1.0, 0.0, 1.0);
 
-      const M = 4.0;
       const baseScore =
-        ((M * (characterComplexity + storyQuality)) / 2) *
+        ((writingMultiplier * (characterComplexity + storyQuality)) / 2) *
         ((1 + pacing) / 2) *
         ((1 + originality) / 2);
       return {
@@ -969,7 +1156,7 @@ export default function DAH_standards(
             reference,
             new DiagonalMatrix(
               Array.from({ length: 11 }, (_, i) =>
-                i === AM.factorIndex ? 0.2 : 0,
+                i === AM.factorIndex ? featureMusicWeight : 0,
               ),
             ),
           ],
@@ -985,7 +1172,7 @@ export default function DAH_standards(
     ): Relation {
       return {
         contributors,
-        references: new Map([[reference, new ScalarMatrix(0.2)]]),
+        references: new Map([[reference, new ScalarMatrix(remixWeight)]]),
         DAH_meta: relationMeta({ name: "remix" }),
       };
     },
@@ -997,24 +1184,23 @@ export default function DAH_standards(
       potential: number,
       effect: number,
     ): Relation {
-      const base = 0.4;
       const weights = [
-        [AP, 0.2],
-        [AU, 0.1],
-        [CP, 0.05],
-        [CU, 0.05],
-        [MP, 0.2],
-        [MU, 0.1],
-        [AV, 0.0],
-        [AL, 0.1],
-        [AM, 0.1],
-        [Boredom, 0.1],
-        [Additional, 0.0],
+        [AP, killedByWeightsResolved.AP],
+        [AU, killedByWeightsResolved.AU],
+        [CP, killedByWeightsResolved.CP],
+        [CU, killedByWeightsResolved.CU],
+        [MP, killedByWeightsResolved.MP],
+        [MU, killedByWeightsResolved.MU],
+        [AV, killedByWeightsResolved.AV],
+        [AL, killedByWeightsResolved.AL],
+        [AM, killedByWeightsResolved.AM],
+        [Boredom, killedByWeightsResolved.Boredom],
+        [Additional, killedByWeightsResolved.Additional],
       ] as const;
 
       const diag = Array.from({ length: 11 }, () => 0);
       for (const [f, w] of weights) {
-        diag[f.factorIndex] = w * potential * effect * base;
+        diag[f.factorIndex] = w * potential * effect * killedByBase;
       }
 
       return {
@@ -1031,7 +1217,7 @@ export default function DAH_standards(
     ): Relation {
       return {
         contributors,
-        references: new Map([[reference, new ScalarMatrix(0.0)]]),
+        references: new Map([[reference, new ScalarMatrix(gateOpenWeight)]]),
         DAH_meta: relationMeta({ name: "gateOpen" }),
       };
     },

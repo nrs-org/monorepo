@@ -623,3 +623,232 @@ describe("VisualType", () => {
     expect(VisualType.AlbumArt.name).toBe("albumArt");
   });
 });
+
+// ---- config overrides ----
+
+describe("config overrides", () => {
+  function makeCustomCtx(overrides: Parameters<typeof DAH_standards>[0]) {
+    const factors = DAH_factors();
+    const standards = DAH_standards(overrides);
+    const ctx = newContext({ extensions: [factors, standards] });
+    return { ctx, standards };
+  }
+
+  it("overrides irVersion", () => {
+    const { ctx, standards } = makeCustomCtx({ irVersion: "2.0.0" });
+    const impact = standards.emotion(ctx, contribs(), 1.0, [[AP, 1.0]]);
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    expect(ir.version).toBe("2.0.0");
+  });
+
+  it("overrides cryBase", () => {
+    const { ctx, standards } = makeCustomCtx({ cryBase: 5.0 });
+    const impact = standards.cry(ctx, contribs(), [[AP, 1.0]]);
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    const args = ir.emotionArgs as { base: number };
+    expect(args.base).toBe(5.0);
+  });
+
+  it("overrides ehiBase", () => {
+    const { ctx, standards } = makeCustomCtx({ ehiBase: 7.0 });
+    const impact = standards.ehi(ctx, contribs());
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    const args = ir.emotionArgs as { base: number };
+    expect(args.base).toBe(7.0);
+  });
+
+  it("overrides epiOutMin and epiOutMax", () => {
+    const { ctx, standards } = makeCustomCtx({ epiOutMin: 1.0, epiOutMax: 2.0 });
+    const low = standards.epi(ctx, contribs(), 0.0);
+    const high = standards.epi(ctx, contribs(), 1.0);
+    const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    expect(lowArgs.base).toBeCloseTo(1.0, 10);
+    expect(highArgs.base).toBeCloseTo(2.0, 10);
+  });
+
+  it("overrides aeiOutMin and aeiOutMax", () => {
+    const { ctx, standards } = makeCustomCtx({ aeiOutMin: 5.0, aeiOutMax: 10.0 });
+    const low = standards.aei(ctx, contribs(), 0.0, Sign.Positive, [[AP, 1.0]]);
+    const high = standards.aei(ctx, contribs(), 1.0, Sign.Positive, [[AP, 1.0]]);
+    const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    expect(lowArgs.base).toBeCloseTo(5.0, 10);
+    expect(highArgs.base).toBeCloseTo(10.0, 10);
+  });
+
+  it("overrides neiOutMin and neiOutMax", () => {
+    const { ctx, standards } = makeCustomCtx({ neiOutMin: 1.0, neiOutMax: 5.0 });
+    const low = standards.nei(ctx, contribs(), 0.0, Sign.Positive, [[AP, 1.0]]);
+    const high = standards.nei(ctx, contribs(), 1.0, Sign.Positive, [[AP, 1.0]]);
+    const lowArgs = (low.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    const highArgs = (high.DAH_meta["DAH_ir_source"] as Record<string, unknown>)
+      .emotionArgs as { base: number };
+    expect(lowArgs.base).toBeCloseTo(1.0, 10);
+    expect(highArgs.base).toBeCloseTo(5.0, 10);
+  });
+
+  it("overrides politicsScore", () => {
+    const { ctx, standards } = makeCustomCtx({ politicsScore: 1.5 });
+    const impact = standards.politics(ctx, contribs());
+    expect(impact.score.data[Additional.factorIndex]).toBe(1.5);
+  });
+
+  it("overrides interestField scores", () => {
+    const { ctx, standards } = makeCustomCtx({
+      interestFieldNewScore: 5.0,
+      interestFieldExistingScore: 3.0,
+    });
+    expect(
+      standards.interestField(ctx, contribs(), true).score.data[Additional.factorIndex],
+    ).toBe(5.0);
+    expect(
+      standards.interestField(ctx, contribs(), false).score.data[Additional.factorIndex],
+    ).toBe(3.0);
+  });
+
+  it("overrides droppedScore", () => {
+    const { ctx, standards } = makeCustomCtx({ droppedScore: -1.0 });
+    const impact = standards.dropped(ctx, contribs());
+    expect(impact.score.data[Boredom.factorIndex]).toBe(-1.0);
+  });
+
+  it("overrides musicMultiplier", () => {
+    const { ctx, standards } = makeCustomCtx({ musicMultiplier: 5.0 });
+    const impact = standards.music(ctx, contribs(), 0.5);
+    expect(impact.score.data[AM.factorIndex]).toBeCloseTo(2.5, 10);
+  });
+
+  it("overrides writingMultiplier", () => {
+    const { ctx, standards } = makeCustomCtx({ writingMultiplier: 8.0 });
+    const impact = standards.writing(ctx, contribs(), 1.0, 1.0, 1.0, 1.0);
+    expect(impact.score.data[AL.factorIndex]).toBeCloseTo(8.0, 10);
+  });
+
+  it("overrides osuSong max outputs", () => {
+    const { ctx, standards } = makeCustomCtx({
+      osuPersonalMax: 1.0,
+      osuCommunityMax: 0.5,
+    });
+    const impact = standards.osuSong(ctx, contribs(), 1.0, 1.0);
+    expect(impact.score.data[AP.factorIndex]).toBeCloseTo(1.5, 10);
+  });
+
+  it("overrides featureMusicWeight", () => {
+    const { ctx, standards } = makeCustomCtx({ featureMusicWeight: 0.5 });
+    const relation = standards.featureMusic(ctx, contribs(), "ref1");
+    const matrix = relation.references.get("ref1");
+    expect(matrix).toBeInstanceOf(DiagonalMatrix);
+    if (matrix instanceof DiagonalMatrix) {
+      expect(matrix.data[AM.factorIndex]).toBe(0.5);
+    }
+  });
+
+  it("overrides remixWeight", () => {
+    const { ctx, standards } = makeCustomCtx({ remixWeight: 0.8 });
+    const relation = standards.remix(ctx, contribs(), "ref1");
+    const matrix = relation.references.get("ref1");
+    expect(matrix).toBeInstanceOf(ScalarMatrix);
+    if (matrix instanceof ScalarMatrix) {
+      expect(matrix.data).toBe(0.8);
+    }
+  });
+
+  it("overrides killedByBase", () => {
+    const { ctx, standards } = makeCustomCtx({ killedByBase: 1.0 });
+    const relation = standards.killedBy(ctx, contribs(), "ref1", 1.0, 1.0);
+    const matrix = relation.references.get("ref1");
+    if (matrix instanceof DiagonalMatrix) {
+      // default AP weight 0.2 * base 1.0
+      expect(matrix.data[AP.factorIndex]).toBeCloseTo(0.2, 10);
+    }
+  });
+
+  it("overrides killedByWeights", () => {
+    const { ctx, standards } = makeCustomCtx({
+      killedByWeights: { AP: 0.5 },
+    });
+    const relation = standards.killedBy(ctx, contribs(), "ref1", 1.0, 1.0);
+    const matrix = relation.references.get("ref1");
+    if (matrix instanceof DiagonalMatrix) {
+      // custom AP weight 0.5 * default base 0.4
+      expect(matrix.data[AP.factorIndex]).toBeCloseTo(0.2, 10);
+    }
+  });
+
+  it("overrides gateOpenWeight", () => {
+    const { ctx, standards } = makeCustomCtx({ gateOpenWeight: 0.5 });
+    const relation = standards.gateOpen(ctx, contribs(), "ref1");
+    const matrix = relation.references.get("ref1");
+    expect(matrix).toBeInstanceOf(ScalarMatrix);
+    if (matrix instanceof ScalarMatrix) {
+      expect(matrix.data).toBe(0.5);
+    }
+  });
+
+  it("overrides jumpscareBase", () => {
+    const { ctx, standards } = makeCustomCtx({ jumpscareBase: 2.5 });
+    const impact = standards.jumpscare(ctx, contribs());
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    const args = ir.emotionArgs as { base: number };
+    expect(args.base).toBe(2.5);
+  });
+
+  it("overrides sleeplessNightBase", () => {
+    const { ctx, standards } = makeCustomCtx({ sleeplessNightBase: 6.0 });
+    const impact = standards.sleeplessNight(ctx, contribs());
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    const args = ir.emotionArgs as { base: number };
+    expect(args.base).toBe(6.0);
+  });
+
+  it("overrides memeMaxStrength", () => {
+    const { ctx, standards } = makeCustomCtx({ memeMaxStrength: 3.0 });
+    const periods: DatePeriod[] = [
+      { type: "duration", length: Duration.fromDays(30) },
+    ];
+    // 2.5 would fail with default max 2.0 but passes with 3.0
+    expect(() =>
+      standards.meme(ctx, contribs(), 2.5, periods),
+    ).not.toThrow();
+  });
+
+  it("overrides visual parameters", () => {
+    const { ctx, standards } = makeCustomCtx({
+      visualUniqueOffset: 1.0,
+      visualDivisor: 2.0,
+      visualMultiplier: 3.0,
+    });
+    const impact = standards.visual(
+      ctx,
+      contribs(),
+      VisualType.Animated,
+      1.0,
+      0.0,
+    );
+    // ((1.0 * (0.0 + 1.0)) / 2.0) * 1.0 * 3.0 = 1.5
+    expect(impact.score.data[AV.factorIndex]).toBeCloseTo(1.5, 10);
+  });
+
+  it("overrides consumed thresholds and base scores", () => {
+    // Make the tiny threshold very large so 3 minutes becomes "short"
+    const { ctx, standards } = makeCustomCtx({
+      consumedTinyThreshold: Duration.fromMinutes(1),
+      consumedShortThreshold: Duration.fromHours(10),
+    });
+    const impact = standards.consumed(
+      ctx,
+      contribs(),
+      0.5,
+      Duration.fromMinutes(3),
+    );
+    const ir = impact.DAH_meta["DAH_ir_source"] as Record<string, unknown>;
+    const args = ir.consumedArgs as { baseType: string };
+    expect(args.baseType).toBe("short");
+  });
+});
