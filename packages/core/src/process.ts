@@ -8,7 +8,7 @@ import {
   ScalarMatrix,
   type Matrix,
 } from "./math";
-import { assert } from "./utils";
+import { assert, signedPow } from "./utils";
 import { Graph, alg } from "graphlib";
 import {
   identity,
@@ -105,7 +105,7 @@ export function newZeroVector(context: Context): Vector {
 function embed(context: Context, vector: Vector): Vector {
   const v = new Vector(
     vector.data.map((v, i) =>
-      Math.pow(v, 1 / context.factorScoreCombineWeight.get(i)),
+      signedPow(v, 1 / context.factorScoreCombineWeight.get(i)),
     ),
   );
   assert(
@@ -118,20 +118,14 @@ function embed(context: Context, vector: Vector): Vector {
 function unembed(context: Context, vector: Vector): Vector {
   return new Vector(
     vector.data.map((v, i) =>
-      Math.pow(v, context.factorScoreCombineWeight.get(i)),
+      signedPow(v, context.factorScoreCombineWeight.get(i)),
     ),
   );
 }
 
-function constScoreCalc(
-  context: Context,
-  data: Data,
-  sign: number,
-): Map<Id, Vector> {
-  const signedRelu = (vector: Vector) =>
-    new Vector(vector.data.map((v) => Math.max(0, sign * v)));
+function constScoreCalc(context: Context, data: Data): Map<Id, Vector> {
   const impactEmbeddedScores = data.impacts.map((impact) => {
-    return embed(context, signedRelu(impact.score));
+    return embed(context, impact.score);
   });
 
   const impactScores = new Map<Id, Vector>();
@@ -253,7 +247,7 @@ export async function processContext(
   context: Context,
   data: Data,
 ): Promise<Map<Id, Result>> {
-  const embeddedTotalScores = new Map<Id, [Vector, Vector]>();
+  const embeddedTotalScores = new Map<Id, Vector>();
   let results = new Map<Id, Result>();
 
   const enabled = context.extensions ?? {};
@@ -267,8 +261,7 @@ export async function processContext(
     enabled,
   );
 
-  const positiveConstScores = constScoreCalc(context, data, 1.0);
-  const negativeConstScores = constScoreCalc(context, data, -1.0);
+  const constScores = constScoreCalc(context, data);
   const entrySccs = topoSortEntries(context, data);
   const relations = createRelationMaps(data.relations);
 
@@ -290,9 +283,7 @@ export async function processContext(
       for (const [ref, refWeight] of refs) {
         const embeddedRefScore = embeddedTotalScores.get(ref);
         if (embeddedRefScore !== undefined) {
-          const [posRef, negRef] = embeddedRefScore;
-          positiveConstScores.get(entryId)?.add(refWeight.mul(posRef));
-          negativeConstScores.get(entryId)?.add(refWeight.mul(negRef));
+          constScores.get(entryId)?.add(refWeight.mul(embeddedRefScore));
         } else {
           const j = entryScc.indexOf(ref);
           assert(j >= 0);
@@ -305,27 +296,17 @@ export async function processContext(
       }
     });
 
-    const equationRhsPos = new Array<number>(size).fill(0);
-    const equationRhsNeg = new Array<number>(size).fill(0);
+    const equationRhs = new Array<number>(size).fill(0);
 
     entryScc.forEach((entryId, i) => {
-      const positiveConst = positiveConstScores.get(entryId);
-      const negativeConst = negativeConstScores.get(entryId);
-      if (positiveConst === undefined || negativeConst === undefined) return;
+      const constScore = constScores.get(entryId);
+      if (constScore === undefined) return;
       for (let j = 0; j < N; ++j) {
-        equationRhsPos[i * N + j] = positiveConst.data[j] ?? 0;
-        equationRhsNeg[i * N + j] = negativeConst.data[j] ?? 0;
+        equationRhs[i * N + j] = constScore.data[j] ?? 0;
       }
     });
 
-    const positiveScores = lusolve(
-      equationMatrix,
-      mathjsMatrix(equationRhsPos),
-    );
-    const negativeScores = lusolve(
-      equationMatrix,
-      mathjsMatrix(equationRhsNeg),
-    );
+    const scores = lusolve(equationMatrix, mathjsMatrix(equationRhs));
 
     for (let i = 0; i < entryScc.length; ++i) {
       const entryId = entryScc[i];
@@ -336,19 +317,21 @@ export async function processContext(
         overallVector: newZeroVector(context),
         DAH_meta: makeResultMeta(),
       };
+      const embeddedScore = newZeroVector(context);
       for (let j = 0; j < N; ++j) {
-        result.positiveScore.data[j] = positiveScores.get([i * N + j, 0]);
-        result.negativeScore.data[j] = negativeScores.get([i * N + j, 0]);
+        embeddedScore.data[j] = scores.get([i * N + j, 0]);
       }
 
-      embeddedTotalScores.set(entryId, [
-        result.positiveScore,
-        result.negativeScore,
-      ]);
-      result.positiveScore = unembed(context, result.positiveScore);
-      result.negativeScore = unembed(context, result.negativeScore);
-      result.overallVector.add(result.positiveScore);
-      result.overallVector.add(result.negativeScore.mul(-1));
+      embeddedTotalScores.set(entryId, embeddedScore);
+      result.overallVector = unembed(context, embeddedScore);
+      
+      // For backward compatibility, split into positive and negative components
+      result.positiveScore = new Vector(
+        result.overallVector.data.map((v) => Math.max(0, v)),
+      );
+      result.negativeScore = new Vector(
+        result.overallVector.data.map((v) => Math.max(0, -v)),
+      );
 
       // run afterEntryResult hooks for this entry in the computed order
       await runExtensionHooks(
