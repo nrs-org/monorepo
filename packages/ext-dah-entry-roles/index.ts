@@ -12,6 +12,7 @@ import {
   ScalarMatrix,
   DiagonalMatrix,
   identityMatrix,
+  assert,
 } from "@nrs-org/core";
 
 import type { Factor } from "@nrs-org/ext-dah-factors";
@@ -288,17 +289,16 @@ export default function DAH_entry_roles(
   function parseRoleComponent(str: string): EntryRole {
     const roleTypeLength = indexOfOpChar(str) ?? str.length;
     const roleType = str.substring(0, roleTypeLength) as RoleType;
-    if (RoleTypes[roleType] === undefined) {
-      throw new Error(`invalid role type: ${roleType}`);
-    }
+    assert(RoleTypes[roleType] !== undefined, `invalid role type: ${roleType}`);
 
     let multiplyFactor = 1.0;
     let i = roleTypeLength;
     while (i < str.length) {
       const opChar = str[i];
-      if (opChar !== "*" && opChar !== "/") {
-        throw new Error(`Invalid operator in role expression: ${opChar}`);
-      }
+      assert(
+        opChar === "*" || opChar === "/",
+        `Invalid operator in role expression: ${opChar}`,
+      );
 
       const end = indexOfOpChar(str, i + 1) ?? str.length;
       let factor = parseFloat(str.substring(i + 1, end));
@@ -357,9 +357,7 @@ export default function DAH_entry_roles(
         ? AtomicRoleTypes[roleType]
         : CompositeRoleTypes[roleType]?.calcFactor;
 
-      if (!roleCalcFn) {
-        throw new Error(`Unknown role type: ${roleType}`);
-      }
+      assert(!!roleCalcFn, `Unknown role type: ${roleType}`);
 
       const result = roleCalcFn(calcRoleFactor, musicVars);
       cache.set(roleType, result);
