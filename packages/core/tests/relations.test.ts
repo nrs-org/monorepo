@@ -119,8 +119,8 @@ describe("processContext relations", () => {
       expect(Math.abs(a - expectedA)).toBeLessThan(tol);
       expect(Math.abs(b - expectedB)).toBeLessThan(tol);
     }
-    // negative scores should be (near) zero for these positive-only impacts
-    expect(ra.negativeScore.data.every((v) => Math.abs(v) < tol)).toBe(true);
-    expect(rb.negativeScore.data.every((v) => Math.abs(v) < tol)).toBe(true);
+    // overallVector should be all positive for these positive-only impacts
+    expect(ra.overallVector.data.every((v) => v >= 0)).toBe(true);
+    expect(rb.overallVector.data.every((v) => v >= 0)).toBe(true);
   });
 });

@@ -38,8 +38,6 @@ export interface Data {
 }
 
 export interface Result extends HasMeta<ResultMeta> {
-  positiveScore: Vector;
-  negativeScore: Vector;
   overallVector: Vector;
 }
 
