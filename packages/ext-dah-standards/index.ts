@@ -30,7 +30,10 @@ import {
   Emotion,
   type Factor,
 } from "@nrs-org/ext-dah-factors";
-import type { IrSourceMeta } from "@nrs-org/ext-dah-ir-source";
+import type {
+  DAH_ir_source_extension,
+  IrMeta,
+} from "@nrs-org/ext-dah-ir-source";
 import type { DAH_validator_suppress } from "@nrs-org/ext-dah-validator-suppress";
 
 // ---------------------------------------------------------------------------
@@ -379,6 +382,11 @@ function vectorFromFactors(
   return vec;
 }
 
+type IrMetaArg = { extension?: never; version?: never; name: string } & Record<
+  string,
+  unknown
+>;
+
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
@@ -452,28 +460,30 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
 
   // -- private helpers --
 
-  function irMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
-  ): Record<string, unknown> {
-    return {
-      DAH_ir_source: {
+  function irMeta<M extends IrMeta>(
+    context: Context,
+    meta: M,
+    arg: IrMetaArg,
+  ): M {
+    const ext = context.extensions.DAH_ir_source as
+      | DAH_ir_source_extension
+      | undefined;
+    if (ext !== undefined) {
+      ext.setIrSource(meta, {
+        ...arg,
         extension: "DAH_standards",
         version: irVersion,
-        ...meta,
-      },
-    };
+      });
+    }
+    return meta;
   }
 
-  function impactMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
-  ): ImpactMeta {
-    return makeImpactMeta({ ...irMeta(meta) });
+  function impactMeta(context: Context, arg: IrMetaArg): ImpactMeta {
+    return irMeta(context, makeImpactMeta(), arg);
   }
 
-  function relationMeta(
-    meta: Omit<IrSourceMeta, "extension" | "version"> & Record<string, unknown>,
-  ): RelationMeta {
-    return makeRelationMeta({ ...irMeta(meta) });
+  function relationMeta(context: Context, arg: IrMetaArg): RelationMeta {
+    return irMeta(context, makeRelationMeta(), arg);
   }
 
   function emotionVector(
@@ -549,14 +559,14 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       base: number,
       emotions: WeightedEmotions,
       name = "emotion",
-      meta: Record<string, unknown> = {},
+      meta: Omit<IrMetaArg, "name"> = {},
     ): Impact {
       return {
         contributors,
         score: emotionVector(context, base, emotions),
-        DAH_meta: impactMeta({
-          name,
+        DAH_meta: impactMeta(context, {
           emotionArgs: emotionMeta(base, emotions),
+          name,
           ...meta,
         }),
       };
@@ -751,7 +761,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[Additional, politicsScore]]),
-        DAH_meta: impactMeta({ name: "politics" }),
+        DAH_meta: impactMeta(context, { name: "politics" }),
       };
     },
 
@@ -768,7 +778,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
             newField ? interestFieldNewScore : interestFieldExistingScore,
           ],
         ]),
-        DAH_meta: impactMeta({ name: "interestField" }),
+        DAH_meta: impactMeta(context, { name: "interestField" }),
       };
     },
 
@@ -805,7 +815,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[Boredom, boredomScore]]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name,
           consumedArgs: {
             boredom,
@@ -847,7 +857,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[Boredom, droppedScore]]),
-        DAH_meta: impactMeta({ name: "dropped" }),
+        DAH_meta: impactMeta(context, { name: "dropped" }),
       };
     },
 
@@ -888,7 +898,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[Additional, value]]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name: "additional",
           additionalArgs: { description },
         }),
@@ -903,7 +913,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[AM, musicBase * musicMultiplier]]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name: "music",
           musicArgs: { musicBase },
         }),
@@ -925,7 +935,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[AV, visualScore]]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name: "visual",
           visualArgs: {
             visualType: visualType.name,
@@ -962,7 +972,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
         score: vectorFromFactors(context, [
           [AP, personalFactor + communityFactor],
         ]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name: "osuSong",
           osuSongArgs: { personal, community },
         }),
@@ -995,7 +1005,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         score: vectorFromFactors(context, [[AL, baseScore]]),
-        DAH_meta: impactMeta({
+        DAH_meta: impactMeta(context, {
           name: "writing",
           writingArgs: {
             characterComplexity,
@@ -1008,7 +1018,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
     },
 
     featureMusic(
-      _context: Context,
+      context: Context,
       contributors: Contributors,
       reference: Id,
     ): Relation {
@@ -1024,24 +1034,24 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
             ),
           ],
         ]),
-        DAH_meta: relationMeta({ name: "featureMusic" }),
+        DAH_meta: relationMeta(context, { name: "featureMusic" }),
       };
     },
 
     remix(
-      _context: Context,
+      context: Context,
       contributors: Contributors,
       reference: Id,
     ): Relation {
       return {
         contributors,
         references: new Map([[reference, new ScalarMatrix(remixWeight)]]),
-        DAH_meta: relationMeta({ name: "remix" }),
+        DAH_meta: relationMeta(context, { name: "remix" }),
       };
     },
 
     killedBy(
-      _context: Context,
+      context: Context,
       contributors: Contributors,
       reference: Id,
       potential: number,
@@ -1069,22 +1079,22 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
       return {
         contributors,
         references: new Map([[reference, new DiagonalMatrix(diag)]]),
-        DAH_meta: relationMeta({ name: "killedBy" }),
+        DAH_meta: relationMeta(context, { name: "killedBy" }),
       };
     },
 
     gateOpen(
-      _context: Context,
+      context: Context,
       contributors: Contributors,
       reference: Id,
     ): Relation {
       return {
         contributors,
         references: new Map([[reference, new ScalarMatrix(gateOpenWeight)]]),
-        DAH_meta: relationMeta({ name: "gateOpen" }),
+        DAH_meta: relationMeta(context, { name: "gateOpen" }),
       };
     },
-  };
+  } as const;
 }
 
 export type DAH_standards = ReturnType<typeof DAH_standards>;
