@@ -40,7 +40,8 @@ export type CompositeRoleType =
   | "perform"
   | "vocal_lyrics"
   | "inst"
-  | "inst_total";
+  | "inst_total"
+  | "inst_writing";
 
 export type RoleType = AtomicRoleType | CompositeRoleType;
 
@@ -55,7 +56,7 @@ export interface EntryRoles<T = RoleType> {
 
 export interface EntryRole<T = RoleType> {
   roleType: T;
-  factor: Matrix;
+  factor?: Matrix;
   multiplyFactor: number;
   expressionString: string;
 }
@@ -65,6 +66,7 @@ export interface MusicVars {
   lyricsmusic?: number;
   emolyrics?: number;
   arrange?: number;
+  instperform?: number;
   feat?: boolean;
 }
 
@@ -75,7 +77,7 @@ export interface DAH_entry_roles_extension extends Extension {
     entryId: Id,
     roles: Iterable<EntryRole>,
   ): void;
-  parseRoleExpressionString(str: string): EntryRole[];
+  parseRoleExpressionString(str: string): Omit<EntryRole, "factor">[];
   getComposingAtomicRoleTypes(role: RoleType): AtomicRoleType[];
   isAtomicRoleType(role: RoleType): role is AtomicRoleType;
 }
@@ -137,6 +139,7 @@ function defaultMusicVars(
     lyricsmusic: 0.1,
     emolyrics: 0.2,
     arrange: 0.5,
+    instperform: 1 / 3,
     feat: roles.has("image_feat") || titleHasFeat,
   };
 }
@@ -223,9 +226,9 @@ function initComposite(
 // Atomic role types definition
 const AtomicRoleTypes: Record<AtomicRoleType, AtomicRoleTypeObject> = {
   total: () => identityMatrix,
-  arrange: (factor, vars) => factor("inst_total").scale((vars.arrange * 2) / 3),
-  compose: (factor) => factor("inst_total").add(factor("arrange").scale(-1)),
-  inst_perform: (factor) => factor("inst_total").scale(1 / 3),
+  inst_perform: (factor, vars) => factor("inst_total").scale(vars.instperform),
+  arrange: (factor, vars) => factor("inst_writing").scale(vars.arrange),
+  compose: (factor) => factor("inst_writing").add(factor("arrange").scale(-1)),
   image: (factor, vars) => factor("image_total").scale(vars.feat ? 0.7 : 1.0),
   image_feat: (factor) => factor("image_total").add(factor("image").scale(-1)),
   vocal: (factor) => factor("vocal_lyrics").add(factor("lyrics").scale(-1)),
@@ -257,10 +260,13 @@ const CompositeRoleTypes = initComposite({
         ),
       ),
   ),
-  inst_total: composite(["inst", "inst_perform"], (factor) =>
+  inst_total: composite(["inst_writing", "inst_perform"], (factor) =>
     factor("music_total")
       .add(factor("image_total").scale(-1))
       .add(factor("vocal_lyrics").scale(-1)),
+  ),
+  inst_writing: composite(["compose", "arrange"], (factor) =>
+    factor("inst_total").add(factor("inst_perform").scale(-1)),
   ),
   inst: composite(["compose", "arrange"]),
   perform: composite(["inst_perform", "vocal"]),
@@ -322,7 +328,6 @@ export default function DAH_entry_roles(
 
     return {
       roleType,
-      factor: new ScalarMatrix(NaN),
       multiplyFactor,
       expressionString: str,
     };
