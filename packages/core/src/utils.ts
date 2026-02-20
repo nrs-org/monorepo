@@ -8,22 +8,11 @@ export function signedPow(x: number, p: number): number {
 }
 
 export function combinePow(numbers: number[], factor: number) {
-  function combineUnsigned(arr: number[], factor: number) {
-    if (factor < 1e-4) return arr.reduce((a, b) => Math.max(a, b), 0.0);
-    return Math.pow(
-      arr.map((x) => Math.pow(x, 1.0 / factor)).reduce((a, b) => a + b, 0.0),
-      factor,
-    );
+  if (factor < 1e-4) {
+    return numbers.reduce((a, b) => (Math.abs(a) > Math.abs(b) ? a : b), 0.0);
   }
-
-  return (
-    combineUnsigned(
-      numbers.map((n) => Math.max(n, 0.0)),
-      factor,
-    ) -
-    combineUnsigned(
-      numbers.map((n) => Math.max(-n, 0.0)),
-      factor,
-    )
-  );
+  const sum = numbers
+    .map((x) => signedPow(x, 1.0 / factor))
+    .reduce((a, b) => a + b, 0.0);
+  return signedPow(sum, factor);
 }

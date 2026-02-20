@@ -1,5 +1,5 @@
 import { describe, it, expect } from "bun:test";
-import { signedPow } from "../src/utils";
+import { signedPow, combinePow } from "../src/utils";
 
 describe("signedPow", () => {
   it("should handle positive numbers like regular power", () => {
@@ -45,5 +45,47 @@ describe("signedPow", () => {
       negValue,
       10,
     );
+  });
+});
+
+describe("combinePow", () => {
+  it("should combine positive numbers correctly", () => {
+    const result = combinePow([2, 3], 2);
+    // With factor 2: (2^0.5 + 3^0.5)^2 = (sqrt(2) + sqrt(3))^2
+    const expected = Math.pow(Math.sqrt(2) + Math.sqrt(3), 2);
+    expect(result).toBeCloseTo(expected, 10);
+  });
+
+  it("should combine negative numbers using signed power", () => {
+    const result = combinePow([-2, -3], 2);
+    // With signed power: (signedPow(-2, 0.5) + signedPow(-3, 0.5))^2
+    // = (-sqrt(2) + -sqrt(3))^2 = -(sqrt(2) + sqrt(3))^2
+    const expected = -Math.pow(Math.sqrt(2) + Math.sqrt(3), 2);
+    expect(result).toBeCloseTo(expected, 10);
+  });
+
+  it("should combine mixed-sign numbers correctly", () => {
+    const result = combinePow([4, -1], 2);
+    // signedPow(4, 0.5) + signedPow(-1, 0.5) = 2 + (-1) = 1
+    // signedPow(1, 2) = 1
+    expect(result).toBeCloseTo(1, 10);
+  });
+
+  it("should handle factor close to zero (max behavior)", () => {
+    const result = combinePow([5, -10, 3], 1e-5);
+    // Should return the value with largest absolute value with its sign
+    expect(result).toBe(-10);
+  });
+
+  it("should handle zero values", () => {
+    const result = combinePow([0, 2, 0], 2);
+    expect(result).toBeCloseTo(2, 10);
+  });
+
+  it("should be associative with signed power", () => {
+    // Test that order doesn't matter for the result
+    const a = combinePow([2, -3, 1], 2);
+    const b = combinePow([-3, 2, 1], 2);
+    expect(a).toBeCloseTo(b, 10);
   });
 });
