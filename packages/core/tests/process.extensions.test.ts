@@ -103,8 +103,6 @@ describe("processContext extensions", () => {
       name: "a",
       afterEntryResult: (_ctx, _id, result) => {
         return {
-          positiveScore: result.positiveScore,
-          negativeScore: result.negativeScore,
           overallVector: result.overallVector,
           DAH_meta: makeResultMeta({ replaced: true }),
         };
@@ -140,17 +138,9 @@ describe("processContext extensions", () => {
       postProcess: (_, results) => {
         const m = new Map<string, Result>();
         const r = results.get("e1");
-        const positiveScore = r?.positiveScore;
-        const negativeScore = r?.negativeScore;
         const overallVector = r?.overallVector;
-        if (
-          positiveScore !== undefined &&
-          negativeScore !== undefined &&
-          overallVector !== undefined
-        )
+        if (overallVector !== undefined)
           m.set("x", {
-            positiveScore,
-            negativeScore,
             overallVector,
             DAH_meta: makeResultMeta({ replacedByPost: true }),
           });

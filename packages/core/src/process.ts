@@ -312,8 +312,6 @@ export async function processContext(
       const entryId = entryScc[i];
       if (entryId === undefined) continue;
       let result: Result = {
-        positiveScore: newZeroVector(context),
-        negativeScore: newZeroVector(context),
         overallVector: newZeroVector(context),
         DAH_meta: makeResultMeta(),
       };
@@ -324,14 +322,6 @@ export async function processContext(
 
       embeddedTotalScores.set(entryId, embeddedScore);
       result.overallVector = unembed(context, embeddedScore);
-
-      // For backward compatibility, split into positive and negative components
-      result.positiveScore = new Vector(
-        result.overallVector.data.map((v) => Math.max(0, v)),
-      );
-      result.negativeScore = new Vector(
-        result.overallVector.data.map((v) => Math.max(0, -v)),
-      );
 
       // run afterEntryResult hooks for this entry in the computed order
       await runExtensionHooks(

@@ -31,8 +31,6 @@ describe("ext-dah-overall-score", () => {
     const result = {
       overallVector: new Vector([2, 3, 4, 1]),
       DAH_meta: makeResultMeta(),
-      positiveScore: new Vector([0]),
-      negativeScore: new Vector([0]),
     } satisfies Result;
     const results = new Map<string, Result>([["A", result]]);
     ext.postProcess?.(ctx, results);

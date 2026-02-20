@@ -34,14 +34,6 @@ describe("processContext with signed power (negative scores)", () => {
     // The overall vector should have negative values
     expect(r?.overallVector.data[0]).toBeLessThan(0);
     expect(r?.overallVector.data[1]).toBeLessThan(0);
-
-    // positiveScore should be zero or near zero
-    expect(r?.positiveScore.data[0]).toBeCloseTo(0, 5);
-    expect(r?.positiveScore.data[1]).toBeCloseTo(0, 5);
-
-    // negativeScore should capture the absolute value
-    expect(r?.negativeScore.data[0]).toBeGreaterThan(0);
-    expect(r?.negativeScore.data[1]).toBeGreaterThan(0);
   });
 
   it("handles mixed positive and negative scores correctly", async () => {
@@ -75,14 +67,6 @@ describe("processContext with signed power (negative scores)", () => {
     expect(r?.overallVector.data[0]).toBeGreaterThan(0);
     // Second dimension should be negative
     expect(r?.overallVector.data[1]).toBeLessThan(0);
-
-    // positiveScore should have positive value in first dimension
-    expect(r?.positiveScore.data[0]).toBeGreaterThan(0);
-    expect(r?.positiveScore.data[1]).toBeCloseTo(0, 5);
-
-    // negativeScore should have positive value in second dimension
-    expect(r?.negativeScore.data[0]).toBeCloseTo(0, 5);
-    expect(r?.negativeScore.data[1]).toBeGreaterThan(0);
   });
 
   it("combines multiple impacts with different signs", async () => {
