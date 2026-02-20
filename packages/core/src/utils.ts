@@ -49,7 +49,8 @@ function combinePowSmallFactor(numbers: number[]): number {
 
     // If this group doesn't cancel, return the first value
     if (Math.abs(sum) >= EPSILON) {
-      return group.values[0];
+      // group.values.length > 0 but this is to make tsc not complain
+      return group.values[0] ?? 0;
     }
   }
 
