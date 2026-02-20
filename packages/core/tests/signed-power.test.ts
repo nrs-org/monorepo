@@ -91,6 +91,19 @@ describe("combinePow", () => {
     // Mix of values where max doesn't cancel
     const result5 = combinePow([7, -3, 2], 1e-5);
     expect(result5).toBe(7);
+
+    // Test order independence (from review comment)
+    // c([a, -a, b]) should equal b
+    const result6 = combinePow([5, -5, 3], 1e-5);
+    expect(result6).toBe(3);
+
+    // c([a, b, -a]) should also equal b (order shouldn't matter)
+    const result7 = combinePow([5, 3, -5], 1e-5);
+    expect(result7).toBe(3);
+
+    // Another order: [b, a, -a] should also equal b
+    const result8 = combinePow([3, 5, -5], 1e-5);
+    expect(result8).toBe(3);
   });
 
   it("should handle zero values", () => {
