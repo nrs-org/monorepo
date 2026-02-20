@@ -1,9 +1,4 @@
-import {
-  type EntryMeta,
-  type Extension,
-  type HasMeta,
-  type Id,
-} from "@nrs-org/core";
+import { type EntryMeta, type HasMeta, type Id } from "@nrs-org/core";
 
 export type MediaLengthUnit = "seconds" | "minutes" | "hours";
 
@@ -89,21 +84,7 @@ export interface EntryProgressMeta extends HasMeta {
   currentUnitId?: string;
 }
 
-export type DAH_entry_progress = Extension & {
-  getProgress(meta: EntryMeta): EntryProgressMeta | undefined;
-  setProgress(meta: EntryMeta, value: EntryProgressMeta | undefined): void;
-  /**
-   * Returns the total media length in seconds for the supplied progress meta.
-   * If "units" present, sums their lengths; otherwise if uniformUnitLength is present and count given, totals that.
-   * If neither are present, returns 0.
-   */
-  getTotalMediaLengthSeconds(
-    meta: EntryProgressMeta,
-    totalUnitCount?: number,
-  ): number;
-};
-
-export default function DAH_entry_progress(): DAH_entry_progress {
+export default function DAH_entry_progress() {
   return {
     name: "DAH_entry_progress",
     dependencies() {
@@ -164,8 +145,9 @@ export default function DAH_entry_progress(): DAH_entry_progress {
   };
 }
 
+export type ExtDAH_entry_progress = ReturnType<typeof DAH_entry_progress>;
+
 /**
- * Example usages:
  *
  * // Anime
  * const animeProgress: EntryProgressMeta = {

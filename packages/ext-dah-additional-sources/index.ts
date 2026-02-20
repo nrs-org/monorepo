@@ -1,4 +1,4 @@
-import { type EntryMeta, type Extension } from "@nrs-org/core";
+import { type EntryMeta } from "@nrs-org/core";
 
 export interface AdditionalSources {
   id_MyAnimeList?: number;
@@ -50,15 +50,7 @@ export type SpotifySource =
   | { album: string }
   | { artist: string };
 
-export interface DAH_additional_sources extends Extension {
-  setAdditionalSources(
-    meta: EntryMeta,
-    sources: AdditionalSources | undefined,
-  ): void;
-  getAdditionalSources(meta: EntryMeta): AdditionalSources | undefined;
-}
-
-export default function DAH_additional_sources(): DAH_additional_sources {
+export default function DAH_additional_sources() {
   return {
     name: "DAH_additional_sources",
     dependencies(): string[] {
@@ -79,3 +71,7 @@ export default function DAH_additional_sources(): DAH_additional_sources {
     },
   };
 }
+
+export type ExtDAH_additional_sources = ReturnType<
+  typeof DAH_additional_sources
+>;

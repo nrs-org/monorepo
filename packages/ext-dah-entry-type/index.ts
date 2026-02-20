@@ -1,4 +1,4 @@
-import { type EntryMeta, type Extension } from "@nrs-org/core";
+import { type EntryMeta } from "@nrs-org/core";
 
 export type EntryType = StandardEntryType | NonStandardEntryType;
 
@@ -19,12 +19,7 @@ export enum StandardEntryType {
   Game = "Game",
 }
 
-export interface DAH_entry_type extends Extension {
-  setType(meta: EntryMeta, type: EntryType | undefined): void;
-  getType(meta: EntryMeta): EntryType | undefined;
-}
-
-export default function DAH_entry_type(): DAH_entry_type {
+export default function DAH_entry_type() {
   return {
     name: "DAH_entry_type",
     dependencies(): string[] {
@@ -42,3 +37,5 @@ export default function DAH_entry_type(): DAH_entry_type {
     },
   };
 }
+
+export type ExtDAH_entry_type = ReturnType<typeof DAH_entry_type>;

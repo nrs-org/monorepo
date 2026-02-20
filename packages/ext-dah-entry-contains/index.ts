@@ -1,5 +1,4 @@
 import {
-  type Extension,
   makeRelationMeta,
   type Context,
   type Id,
@@ -8,15 +7,9 @@ import {
   identityMatrix,
 } from "@nrs-org/core";
 
-import type { DAH_ir_source_extension } from "@nrs-org/ext-dah-ir-source";
+import type { ExtDAH_ir_source } from "@nrs-org/ext-dah-ir-source";
 
-export default function DAH_entry_contains(): Extension & {
-  entryContains: (
-    context: Context,
-    contributors: Map<Id, Matrix>,
-    childId: Id,
-  ) => Relation;
-} {
+export default function DAH_entry_contains() {
   return {
     name: "DAH_entry_contains",
     dependencies(): string[] {
@@ -31,7 +24,7 @@ export default function DAH_entry_contains(): Extension & {
       const meta = makeRelationMeta();
       // Retrieve DAH_ir_source extension if available
       const irSourceExt = context.extensions?.["DAH_ir_source"] as
-        | DAH_ir_source_extension
+        | ExtDAH_ir_source
         | undefined;
       if (irSourceExt) {
         irSourceExt.setIrSource(meta, {
@@ -48,3 +41,5 @@ export default function DAH_entry_contains(): Extension & {
     },
   };
 }
+
+export type ExtDAH_entry_contains = ReturnType<typeof DAH_entry_contains>;

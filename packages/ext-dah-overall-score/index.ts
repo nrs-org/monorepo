@@ -1,4 +1,4 @@
-import { type Extension, combinePow } from "@nrs-org/core";
+import { combinePow, type Context, type Id, type Result } from "@nrs-org/core";
 import {
   Emotion,
   Art,
@@ -10,13 +10,13 @@ interface Factor {
   factorIndex: number;
 }
 
-export default function DAH_overall_score(): Extension {
+export default function DAH_overall_score() {
   return {
     name: "DAH_overall_score",
     dependencies() {
       return ["DAH_factors"];
     },
-    postProcess(_, results) {
+    postProcess(_: Context, results: Map<Id, Result>) {
       for (const result of results.values()) {
         result.DAH_meta.DAH_overall_score = [
           Emotion,
@@ -38,3 +38,5 @@ export default function DAH_overall_score(): Extension {
     },
   };
 }
+
+export type ExtDAH_overall_score = ReturnType<typeof DAH_overall_score>;

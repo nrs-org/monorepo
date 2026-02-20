@@ -1,11 +1,6 @@
-import { type EntryMeta, type Extension } from "@nrs-org/core";
+import { type EntryMeta } from "@nrs-org/core";
 
-export interface DAH_entry_title extends Extension {
-  setTitle(meta: EntryMeta, title: string | undefined): void;
-  getTitle(meta: EntryMeta): string | undefined;
-}
-
-export default function DAH_entry_title(): DAH_entry_title {
+export default function DAH_entry_title() {
   return {
     name: "DAH_entry_title",
     dependencies(): string[] {
@@ -24,3 +19,5 @@ export default function DAH_entry_title(): DAH_entry_title {
     },
   };
 }
+
+export type ExtDAH_entry_title = ReturnType<typeof DAH_entry_title>;

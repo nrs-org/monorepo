@@ -1,5 +1,4 @@
 import {
-  type Extension,
   type EntryMeta,
   type ImpactMeta,
   type RelationMeta,
@@ -18,17 +17,7 @@ export interface ValidatorSuppression {
   reason: string;
 }
 
-export type DAH_validator_suppress = Extension & {
-  addSuppression(meta: MetaType, rule: string, reason: string): void;
-  isRuleSuppressed(
-    meta: MetaType,
-    rule: string,
-    usedSet?: Set<string>,
-  ): boolean;
-  finalizeSuppressions(meta: MetaType, usedSet: Set<string>): void;
-};
-
-function DAH_validator_suppress(): DAH_validator_suppress {
+function DAH_validator_suppress() {
   return {
     name: "DAH_validator_suppress",
     dependencies() {
@@ -39,7 +28,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
      * Mutates the meta object in place.
      * Throws on blank reason or duplicate rules.
      */
-    addSuppression(meta, rule, reason) {
+    addSuppression(meta: MetaType, rule: string, reason: string) {
       if (!reason.trim()) {
         throw new Error(
           `Cannot suppress rule '${rule}': reason must be non-blank string.`,
@@ -59,7 +48,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
      * Checks if a rule is suppressed. If suppressed and a usedSet is provided,
      * adds the rule to the set for usage tracking.
      */
-    isRuleSuppressed(meta, rule, usedSet) {
+    isRuleSuppressed(meta: MetaType, rule: string, usedSet?: Set<string>) {
       const arr = meta.DAH_validator_suppress as
         | ValidatorSuppression[]
         | undefined;
@@ -71,7 +60,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
     /**
      * After validation, throws if any suppression was declared but never used.
      */
-    finalizeSuppressions(meta, usedSet) {
+    finalizeSuppressions(meta: MetaType, usedSet: Set<string>) {
       const arr = meta.DAH_validator_suppress as
         | ValidatorSuppression[]
         | undefined;
@@ -89,3 +78,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
 }
 
 export default DAH_validator_suppress;
+
+export type ExtDAH_validator_suppress = ReturnType<
+  typeof DAH_validator_suppress
+>;

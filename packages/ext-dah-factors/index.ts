@@ -1,10 +1,8 @@
 import {
   Vector,
-  type Extension,
   ScalarMatrix,
   DiagonalMatrix,
   RegularMatrix,
-  type Matrix,
 } from "@nrs-org/core";
 
 // Factor interface and implementation
@@ -88,27 +86,7 @@ export interface DAH_factorsConfig {
   subscoreWeights?: Partial<Record<SubscoreName, number>>;
 }
 
-export type DAH_factors = Extension & {
-  getFactorCombineWeightVector(): Vector;
-  getSubscoreWeights(): Vector;
-
-  getFactor(name: string): Factor | undefined;
-  getSubscore(
-    name: string,
-  ):
-    | typeof Emotion
-    | typeof Art
-    | typeof BoredomGroup
-    | typeof AdditionalGroup
-    | undefined;
-
-  newVector(input?: Partial<Record<FactorShortName, number>>): Vector;
-  newMatrix(input?: Partial<Record<MatrixKey, number>>): Matrix;
-};
-
-export default function DAH_factors(
-  config: DAH_factorsConfig = {},
-): DAH_factors {
+export default function DAH_factors(config: DAH_factorsConfig = {}) {
   return {
     name: "DAH_factors",
     dependencies() {
@@ -228,3 +206,5 @@ export default function DAH_factors(
     },
   };
 }
+
+export type ExtDAH_factors = ReturnType<typeof DAH_factors>;

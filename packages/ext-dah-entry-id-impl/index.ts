@@ -1,4 +1,4 @@
-import { type Extension } from "@nrs-org/core";
+import { type Context, type Data } from "@nrs-org/core";
 
 // Type-level ID pieces
 export type TypePrefix = "A" | "M" | "L" | "V" | "F" | "G" | "GF" | "O";
@@ -223,24 +223,14 @@ export function parseEntryId(id: string): EntryIdParsed | undefined {
   return undefined;
 }
 
-export interface DAH_entry_id_impl extends Extension {
-  parseEntryId: (
-    id: string,
-    throwOnInvalid?: boolean,
-  ) => EntryIdParsed | undefined;
-  validateEntryId: (id: string, throwOnInvalid?: boolean) => boolean;
-}
-
-export default function DAH_entry_id_impl(
-  config?: IdImplConfig,
-): DAH_entry_id_impl {
+export default function DAH_entry_id_impl(config?: IdImplConfig) {
   const validateEntries = config?.validateEntries ?? true;
   return {
     name: "DAH_entry_id_impl",
     dependencies(): string[] {
       return ["DAH_entry_id"];
     },
-    preprocessData(_, data) {
+    preprocessData(_: Context, data: Data) {
       if (validateEntries) {
         for (const entry of data.entries.values()) {
           this.validateEntryId(entry.id, true);
@@ -258,3 +248,5 @@ export default function DAH_entry_id_impl(
     },
   };
 }
+
+export type ExtDAH_entry_id_impl = ReturnType<typeof DAH_entry_id_impl>;

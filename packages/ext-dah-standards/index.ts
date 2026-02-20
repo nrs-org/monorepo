@@ -30,11 +30,8 @@ import {
   Emotion,
   type Factor,
 } from "@nrs-org/ext-dah-factors";
-import type {
-  DAH_ir_source_extension,
-  IrMeta,
-} from "@nrs-org/ext-dah-ir-source";
-import type { DAH_validator_suppress } from "@nrs-org/ext-dah-validator-suppress";
+import type { ExtDAH_ir_source, IrMeta } from "@nrs-org/ext-dah-ir-source";
+import type { ExtDAH_validator_suppress } from "@nrs-org/ext-dah-validator-suppress";
 
 // ---------------------------------------------------------------------------
 // Duration helpers (millisecond-based, avoids external deps)
@@ -466,7 +463,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
     arg: IrMetaArg,
   ): M {
     const ext = context.extensions.DAH_ir_source as
-      | DAH_ir_source_extension
+      | ExtDAH_ir_source
       | undefined;
     if (ext !== undefined) {
       ext.setIrSource(meta, {
@@ -609,7 +606,7 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
 
       if (!singlePADS) {
         const suppressExt = context.extensions.DAH_validator_suppress as
-          | DAH_validator_suppress
+          | ExtDAH_validator_suppress
           | undefined;
         suppressExt?.addSuppression(
           impact.DAH_meta,
@@ -1093,4 +1090,4 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
   } as const;
 }
 
-export type DAH_standards = ReturnType<typeof DAH_standards>;
+export type ExtDAH_standards = ReturnType<typeof DAH_standards>;
