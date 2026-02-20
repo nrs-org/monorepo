@@ -9,7 +9,8 @@ export function signedPow(x: number, p: number): number {
 
 export function combinePow(numbers: number[], factor: number) {
   if (factor < 1e-4) {
-    return numbers.reduce((a, b) => (Math.abs(a) > Math.abs(b) ? a : b), 0.0);
+    // For very small factors, the limit is the sum of the values
+    return numbers.reduce((a, b) => a + b, 0.0);
   }
   const sum = numbers
     .map((x) => signedPow(x, 1.0 / factor))
