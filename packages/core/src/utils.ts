@@ -19,7 +19,7 @@ export function signedPow(x: number, p: number): number {
  */
 function combinePowSmallFactor(numbers: number[]): number {
   // Group values by their absolute value (with epsilon tolerance)
-  const groups: Array<{ abs: number; values: number[] }> = [];
+  const groups: { abs: number; values: number[] }[] = [];
 
   for (const x of numbers) {
     const abs = Math.abs(x);
