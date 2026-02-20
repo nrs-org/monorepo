@@ -2,10 +2,11 @@ export function assert(cond: boolean, msg?: string): asserts cond {
   if (!cond) throw new Error(msg || "Assertion failed");
 }
 
-// Epsilon values for numerical comparisons
-const COMBINE_POW_SMALL_FACTOR_THRESHOLD = 1e-4;
-const EPSILON_ABSOLUTE_VALUE = 1e-10;
-const EPSILON_SUM = 1e-10;
+/**
+ * Epsilon value for numerical comparisons and tolerances.
+ * Used for floating point comparisons, small factor thresholds, etc.
+ */
+export const EPSILON = 1e-4;
 
 export function signedPow(x: number, p: number): number {
   if (x >= 0) return Math.pow(x, p);
@@ -26,7 +27,7 @@ function combinePowSmallFactor(numbers: number[]): number {
     // Find existing group with similar absolute value
     let found = false;
     for (const group of groups) {
-      if (Math.abs(group.abs - abs) < EPSILON_ABSOLUTE_VALUE) {
+      if (Math.abs(group.abs - abs) < EPSILON) {
         group.values.push(x);
         found = true;
         break;
@@ -47,7 +48,7 @@ function combinePowSmallFactor(numbers: number[]): number {
     const sum = group.values.reduce((a, b) => a + b, 0);
 
     // If this group doesn't cancel, return the first value
-    if (Math.abs(sum) >= EPSILON_SUM) {
+    if (Math.abs(sum) >= EPSILON) {
       return group.values[0];
     }
   }
@@ -57,7 +58,7 @@ function combinePowSmallFactor(numbers: number[]): number {
 }
 
 export function combinePow(numbers: number[], factor: number) {
-  if (factor < COMBINE_POW_SMALL_FACTOR_THRESHOLD) {
+  if (factor < EPSILON) {
     return combinePowSmallFactor(numbers);
   }
   const sum = numbers
