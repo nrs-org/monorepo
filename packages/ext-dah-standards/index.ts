@@ -6,7 +6,6 @@ import {
   type Matrix,
   type Relation,
   type RelationMeta,
-  type Extension,
   Vector,
   ScalarMatrix,
   DiagonalMatrix,
@@ -32,6 +31,7 @@ import {
   type Factor,
 } from "@nrs-org/ext-dah-factors";
 import type { IrSourceMeta } from "@nrs-org/ext-dah-ir-source";
+import type { DAH_validator_suppress } from "@nrs-org/ext-dah-validator-suppress";
 
 // ---------------------------------------------------------------------------
 // Duration helpers (millisecond-based, avoids external deps)
@@ -380,187 +380,10 @@ function vectorFromFactors(
 }
 
 // ---------------------------------------------------------------------------
-// Extension type
-// ---------------------------------------------------------------------------
-
-export type DAH_standards = Extension & {
-  emotion(
-    context: Context,
-    contributors: Contributors,
-    base: number,
-    emotions: WeightedEmotions,
-    name?: string,
-    meta?: Record<string, unknown>,
-  ): Impact;
-
-  cry(
-    context: Context,
-    contributors: Contributors,
-    emotions: WeightedEmotions,
-  ): Impact;
-
-  pads(
-    context: Context,
-    contributors: Contributors,
-    periods: DatePeriod[],
-    emotions: WeightedEmotions,
-    singlePADS?: boolean,
-  ): Impact;
-
-  xei(
-    context: Context,
-    contributors: Contributors,
-    name: string,
-    factor: number,
-    sign: Sign,
-    base: number,
-    emotions: WeightedEmotions,
-  ): Impact;
-
-  aei(
-    context: Context,
-    contributors: Contributors,
-    factor: number,
-    sign: Sign,
-    emotions: WeightedEmotions,
-  ): Impact;
-
-  nei(
-    context: Context,
-    contributors: Contributors,
-    factor: number,
-    sign: Sign,
-    emotions: WeightedEmotions,
-  ): Impact;
-
-  maxAEIPADS(
-    context: Context,
-    contributors: Contributors,
-    periods: DatePeriod[],
-    emotions: WeightedEmotions,
-  ): Impact[];
-
-  cryPADS(
-    context: Context,
-    contributors: Contributors,
-    periods: DatePeriod[],
-    emotions: WeightedEmotions,
-  ): Impact[];
-
-  waifu(
-    context: Context,
-    contributors: Contributors,
-    waifu: string,
-    periods: DatePeriod[],
-  ): Impact;
-
-  ehi(context: Context, contributors: Contributors): Impact;
-
-  epi(context: Context, contributors: Contributors, factor: number): Impact;
-
-  jumpscare(context: Context, contributors: Contributors): Impact;
-  sleeplessNight(context: Context, contributors: Contributors): Impact;
-  politics(context: Context, contributors: Contributors): Impact;
-
-  interestField(
-    context: Context,
-    contributors: Contributors,
-    newField: boolean,
-  ): Impact;
-
-  consumed(
-    context: Context,
-    contributors: Contributors,
-    boredom: number,
-    duration: DurationMs,
-    name?: string,
-    meta?: Record<string, unknown>,
-  ): Impact;
-
-  animeConsumed(
-    context: Context,
-    contributors: Contributors,
-    boredom: number,
-    episodes: number,
-    episodeDuration?: DurationMs,
-  ): Impact;
-
-  dropped(context: Context, contributors: Contributors): Impact;
-
-  meme(
-    context: Context,
-    contributors: Contributors,
-    strength: number,
-    periods: DatePeriod[],
-  ): Impact;
-
-  additional(
-    context: Context,
-    contributors: Contributors,
-    value: number,
-    description: string,
-  ): Impact;
-
-  music(
-    context: Context,
-    contributors: Contributors,
-    musicBase: number,
-  ): Impact;
-
-  visual(
-    context: Context,
-    contributors: Contributors,
-    visualType: VisualType,
-    base: number,
-    unique: number,
-  ): Impact;
-
-  osuSong(
-    context: Context,
-    contributors: Contributors,
-    personal: number,
-    community: number,
-  ): Impact;
-
-  writing(
-    context: Context,
-    contributors: Contributors,
-    characterComplexity: number,
-    storyQuality: number,
-    pacing: number,
-    originality: number,
-  ): Impact;
-
-  featureMusic(
-    context: Context,
-    contributors: Contributors,
-    reference: Id,
-  ): Relation;
-
-  remix(context: Context, contributors: Contributors, reference: Id): Relation;
-
-  killedBy(
-    context: Context,
-    contributors: Contributors,
-    reference: Id,
-    potential: number,
-    effect: number,
-  ): Relation;
-
-  gateOpen(
-    context: Context,
-    contributors: Contributors,
-    reference: Id,
-  ): Relation;
-};
-
-// ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
 
-export default function DAH_standards(
-  config: DAH_standardsConfig = {},
-): DAH_standards {
+export default function DAH_standards(config: DAH_standardsConfig = {}) {
   const averageAnimeEpisodeDuration =
     config.averageAnimeEpisodeDuration ?? Duration.fromMinutes(20);
 
@@ -775,15 +598,17 @@ export default function DAH_standards(
       );
 
       if (!singlePADS) {
-        const suppressExt = context.extensions[
-          "DAH_validator_suppress"
-        ] as unknown as
-          | {
-              suppressRule?: (impact: Impact, rule: string) => void;
-            }
+        const suppressExt = context.extensions.DAH_validator_suppress as
+          | DAH_validator_suppress
           | undefined;
-        if (suppressExt?.suppressRule) {
-          suppressExt.suppressRule(impact, "dah-lone-pads");
+        const newMeta = suppressExt?.addSuppression(
+          impact.DAH_meta,
+          "dah-lone-pads",
+          "DAH_standards single PADS",
+        );
+        // TODO: update this after migrating DAH_validator_suppress to a mutating API
+        if (newMeta) {
+          impact.DAH_meta = newMeta;
         }
       }
 
@@ -1261,3 +1086,5 @@ export default function DAH_standards(
     },
   };
 }
+
+export type DAH_standards = ReturnType<typeof DAH_standards>;

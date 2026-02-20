@@ -1,5 +1,5 @@
 {
-  "name": "ext-dah-validator-suppress",
+  "name": "@nrs-org/ext-dah-validator-suppress",
   "module": "index.ts",
   "type": "module",
   "private": true,
