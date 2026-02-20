@@ -16,11 +16,13 @@ import DAH_standards, {
   Duration,
   type DatePeriod,
 } from "../index";
+import DAH_ir_source from "@nrs-org/ext-dah-ir-source";
 
 function makeCtx() {
-  const factors = DAH_factors();
   const standards = DAH_standards();
-  const ctx = newContext({ extensions: [factors, standards] });
+  const ctx = newContext({
+    extensions: [standards, DAH_factors(), DAH_ir_source()],
+  });
   return { ctx, standards };
 }
 
@@ -628,9 +630,10 @@ describe("VisualType", () => {
 
 describe("config overrides", () => {
   function makeCustomCtx(overrides: Parameters<typeof DAH_standards>[0]) {
-    const factors = DAH_factors();
     const standards = DAH_standards(overrides);
-    const ctx = newContext({ extensions: [factors, standards] });
+    const ctx = newContext({
+      extensions: [standards, DAH_factors(), DAH_ir_source()],
+    });
     return { ctx, standards };
   }
 

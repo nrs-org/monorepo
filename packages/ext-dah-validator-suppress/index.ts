@@ -1,6 +1,11 @@
-import { type Extension } from "@nrs-org/core";
+import {
+  type Extension,
+  type EntryMeta,
+  type ImpactMeta,
+  type RelationMeta,
+} from "@nrs-org/core";
 
-export type EntryMeta = Record<string, unknown> & { DAH_meta_owner: "entry" };
+type MetaType = EntryMeta | ImpactMeta | RelationMeta;
 
 /**
  * DAH_validator_suppress Extension
@@ -15,13 +20,13 @@ export interface ValidatorSuppression {
 }
 
 export type DAH_validator_suppress = Extension & {
-  addSuppression(meta: EntryMeta, rule: string, reason: string): EntryMeta;
+  addSuppression<T extends MetaType>(meta: T, rule: string, reason: string): T;
   isRuleSuppressed(
-    meta: EntryMeta,
+    meta: MetaType,
     rule: string,
     usedSet?: Set<string>,
   ): boolean;
-  finalizeSuppressions(meta: EntryMeta, usedSet: Set<string>): void;
+  finalizeSuppressions(meta: MetaType, usedSet: Set<string>): void;
 };
 
 // Extension export pattern
@@ -36,7 +41,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
      * Throws on invalid/blank reason, duplicate rules, or malformed meta.
      * Returns a new EntryMeta (never mutates).
      */
-    addSuppression(meta: EntryMeta, rule: string, reason: string): EntryMeta {
+    addSuppression(meta, rule, reason) {
       if (typeof reason !== "string" || !reason.trim()) {
         throw new Error(
           `Cannot suppress rule '${rule}': reason must be non-blank string.`,
@@ -77,7 +82,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
      * Throws for legacy or malformed suppression fields. Never mutates.
      */
     isRuleSuppressed(
-      meta: EntryMeta,
+      meta: MetaType,
       rule: string,
       usedSet?: Set<string>,
     ): boolean {
@@ -105,7 +110,7 @@ function DAH_validator_suppress(): DAH_validator_suppress {
     /**
      * After validation, throws if any suppression is declared but not used.
      */
-    finalizeSuppressions(meta: EntryMeta, usedSet: Set<string>): void {
+    finalizeSuppressions(meta: MetaType, usedSet: Set<string>): void {
       const arr = meta.DAH_validator_suppress;
       if (!arr) return; // nothing to check
       if (
