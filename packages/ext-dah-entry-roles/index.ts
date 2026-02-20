@@ -1,5 +1,4 @@
 import {
-  type Extension,
   type Context,
   type Data,
   type Entry,
@@ -13,7 +12,6 @@ import {
   ScalarMatrix,
   DiagonalMatrix,
   identityMatrix,
-  assert,
 } from "@nrs-org/core";
 
 import type { Factor } from "@nrs-org/ext-dah-factors";
@@ -68,18 +66,6 @@ export interface MusicVars {
   arrange?: number;
   instperform?: number;
   feat?: boolean;
-}
-
-// Extension interface
-export interface DAH_entry_roles_extension extends Extension {
-  addRole(
-    object: Entry | Impact | Relation,
-    entryId: Id,
-    roles: Iterable<EntryRole>,
-  ): void;
-  parseRoleExpressionString(str: string): Omit<EntryRole, "factor">[];
-  getComposingAtomicRoleTypes(role: RoleType): AtomicRoleType[];
-  isAtomicRoleType(role: RoleType): role is AtomicRoleType;
 }
 
 // Helper function to add to map
@@ -187,7 +173,6 @@ function initComposite(
     }
 
     const typeObj = obj[type];
-    assert(typeObj !== undefined, `Missing composite role type: ${type}`);
 
     const expandedChildren = typeObj.children.flatMap((role) => {
       if (isAtomicRoleType(role)) {
@@ -291,7 +276,7 @@ function indexOfOpChar(str: string, pos = 0): number | undefined {
 // Main extension export
 export default function DAH_entry_roles(
   config: ExtConfig_DAH_entry_roles = {},
-): DAH_entry_roles_extension {
+) {
   // Get DAH_entry_contains helper
   function getDAH_entry_contains(context: Context) {
     return context.extensions["DAH_entry_contains"] as ReturnType<
@@ -311,10 +296,9 @@ export default function DAH_entry_roles(
     let i = roleTypeLength;
     while (i < str.length) {
       const opChar = str[i];
-      assert(
-        opChar === "*" || opChar === "/",
-        `Invalid operator in role expression: ${opChar}`,
-      );
+      if (opChar !== "*" && opChar !== "/") {
+        throw new Error(`Invalid operator in role expression: ${opChar}`);
+      }
 
       const end = indexOfOpChar(str, i + 1) ?? str.length;
       let factor = parseFloat(str.substring(i + 1, end));
@@ -513,3 +497,5 @@ export default function DAH_entry_roles(
     },
   };
 }
+
+export type ExtDAH_entry_roles = ReturnType<typeof DAH_entry_roles>;
