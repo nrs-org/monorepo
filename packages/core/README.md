@@ -15,7 +15,7 @@ The core package now uses a signed-power-based scoring approach instead of split
 The signed power function is defined as:
 
 ```typescript
-signedPow(x, p) = x >= 0 ? x^p : -((-x)^p)
+signedPow(x, p) = x >= 0 ? x ^ p : -(-x ^ p);
 ```
 
 This function is used in both embedding and unembedding operations to handle mixed-sign scores naturally without requiring separate positive/negative processing paths.

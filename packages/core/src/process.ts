@@ -324,7 +324,7 @@ export async function processContext(
 
       embeddedTotalScores.set(entryId, embeddedScore);
       result.overallVector = unembed(context, embeddedScore);
-      
+
       // For backward compatibility, split into positive and negative components
       result.positiveScore = new Vector(
         result.overallVector.data.map((v) => Math.max(0, v)),
