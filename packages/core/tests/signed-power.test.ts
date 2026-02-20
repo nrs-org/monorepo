@@ -71,17 +71,26 @@ describe("combinePow", () => {
     expect(result).toBeCloseTo(1, 10);
   });
 
-  it("should handle factor close to zero (sum behavior)", () => {
-    // For very small factors, combinePow approaches sum behavior
+  it("should handle factor close to zero (max absolute value)", () => {
+    // For very small factors, return value with largest absolute value
     const result1 = combinePow([5, -10, 3], 1e-5);
-    expect(result1).toBeCloseTo(-2, 10); // 5 + (-10) + 3 = -2
+    expect(result1).toBe(-10); // -10 has largest absolute value
 
-    // Should return 0 for canceling values
+    // Should return 0 for canceling values (tied absolute values that sum to 0)
     const result2 = combinePow([5, -5], 1e-5);
     expect(result2).toBe(0);
 
+    // Multiple canceling pairs
     const result3 = combinePow([3, -3, 1, -1], 1e-6);
     expect(result3).toBe(0);
+
+    // Non-canceling case with same absolute values
+    const result4 = combinePow([5, 5], 1e-5);
+    expect(result4).toBe(5);
+
+    // Mix of values where max doesn't cancel
+    const result5 = combinePow([7, -3, 2], 1e-5);
+    expect(result5).toBe(7);
   });
 
   it("should handle zero values", () => {
