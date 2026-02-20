@@ -28,9 +28,7 @@ describe("DAH_ir_source extension", () => {
     expect(sampleMeta["DAH_ir_source"]).toBeUndefined();
   });
 
-  it("returns undefined if field is missing or wrong type", () => {
-    const badMeta = makeRelationMeta({ DAH_ir_source: { invalid: true } });
+  it("returns undefined if field is missing", () => {
     expect(ext.getIrSource(makeRelationMeta())).toBeUndefined();
-    expect(ext.getIrSource(badMeta)).toBeUndefined();
   });
 });

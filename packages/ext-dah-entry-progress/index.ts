@@ -94,9 +94,7 @@ export type DAH_entry_progress = Extension & {
   setProgress(meta: EntryMeta, value: EntryProgressMeta | undefined): void;
   /**
    * Returns the total media length in seconds for the supplied progress meta.
-   * Only supports MediaLength objects (not legacy numbers).
    * If "units" present, sums their lengths; otherwise if uniformUnitLength is present and count given, totals that.
-   * Units with missing/invalid lengths are skipped.
    * If neither are present, returns 0.
    */
   getTotalMediaLengthSeconds(
@@ -128,44 +126,37 @@ export default function DAH_entry_progress(): DAH_entry_progress {
       }
     },
     /**
-     * Calculate the total media length in seconds, with strict type support (MediaLength objects only).
+     * Calculate the total media length in seconds.
+     * If "units" present, sums their lengths; otherwise if uniformUnitLength is present and count given, totals that.
+     * If neither are present, returns 0.
      */
     getTotalMediaLengthSeconds(
       meta: EntryProgressMeta,
       totalUnitCount?: number,
     ): number {
       if (meta.units && meta.units.length > 0) {
-        // Only accept units with valid MediaLength objects
         return meta.units.reduce((sum, unit) => {
-          const len = unit.length;
-          if (
-            typeof len === "object" &&
-            len !== null &&
-            typeof len.value === "number" &&
-            (len.unit === "seconds" ||
-              len.unit === "minutes" ||
-              len.unit === "hours")
-          ) {
-            switch (len.unit) {
-              case "seconds":
-                return sum + len.value;
-              case "minutes":
-                return sum + len.value * 60;
-              case "hours":
-                return sum + len.value * 3600;
-            }
+          switch (unit.length.unit) {
+            case "seconds":
+              return sum + unit.length.value;
+            case "minutes":
+              return sum + unit.length.value * 60;
+            case "hours":
+              return sum + unit.length.value * 3600;
           }
-          return sum; // skip malformed
         }, 0);
       }
       // Fallback: uniform length for all units, if count known
-      if (meta.uniformUnitLength && typeof totalUnitCount === "number") {
+      if (meta.uniformUnitLength && totalUnitCount !== undefined) {
         const { value, unit } = meta.uniformUnitLength;
-        let seconds = 0;
-        if (unit === "seconds") seconds = value;
-        if (unit === "minutes") seconds = value * 60;
-        if (unit === "hours") seconds = value * 3600;
-        return seconds * totalUnitCount;
+        switch (unit) {
+          case "seconds":
+            return value * totalUnitCount;
+          case "minutes":
+            return value * 60 * totalUnitCount;
+          case "hours":
+            return value * 3600 * totalUnitCount;
+        }
       }
       // Nothing recognized
       return 0;

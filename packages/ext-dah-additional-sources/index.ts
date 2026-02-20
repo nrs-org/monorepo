@@ -1,4 +1,4 @@
-import { assert, type EntryMeta, type Extension } from "@nrs-org/core";
+import { type EntryMeta, type Extension } from "@nrs-org/core";
 
 export interface AdditionalSources {
   id_MyAnimeList?: number;
@@ -75,12 +75,7 @@ export default function DAH_additional_sources(): DAH_additional_sources {
       }
     },
     getAdditionalSources(meta: EntryMeta): AdditionalSources | undefined {
-      const s = meta.DAH_additional_sources;
-      assert(
-        typeof s === "object" || s === undefined,
-        "DAH_additional_sources must be object or undefined",
-      );
-      return s as AdditionalSources | undefined;
+      return meta.DAH_additional_sources as AdditionalSources | undefined;
     },
   };
 }

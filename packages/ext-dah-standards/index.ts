@@ -611,15 +611,11 @@ export default function DAH_standards(config: DAH_standardsConfig = {}) {
         const suppressExt = context.extensions.DAH_validator_suppress as
           | DAH_validator_suppress
           | undefined;
-        const newMeta = suppressExt?.addSuppression(
+        suppressExt?.addSuppression(
           impact.DAH_meta,
           "dah-lone-pads",
           "DAH_standards single PADS",
         );
-        // TODO: update this after migrating DAH_validator_suppress to a mutating API
-        if (newMeta) {
-          impact.DAH_meta = newMeta;
-        }
       }
 
       return impact;

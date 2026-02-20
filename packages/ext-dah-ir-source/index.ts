@@ -41,17 +41,7 @@ export default function DAH_ir_source(): DAH_ir_source_extension {
       }
     },
     getIrSource(meta): IrSourceMeta | undefined {
-      const val = meta["DAH_ir_source"];
-      if (
-        val &&
-        typeof val === "object" &&
-        typeof (val as Record<string, unknown>).extension === "string" &&
-        typeof (val as Record<string, unknown>).version === "string" &&
-        typeof (val as Record<string, unknown>).name === "string"
-      ) {
-        return val as IrSourceMeta;
-      }
-      return undefined;
+      return meta["DAH_ir_source"] as IrSourceMeta | undefined;
     },
   };
 }

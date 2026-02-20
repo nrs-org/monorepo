@@ -18,8 +18,6 @@ export default function DAH_overall_score(): Extension {
     },
     postProcess(_, results) {
       for (const result of results.values()) {
-        if (!result.overallVector || !Array.isArray(result.overallVector.data))
-          continue;
         result.DAH_meta.DAH_overall_score = [
           Emotion,
           Art,
@@ -29,8 +27,7 @@ export default function DAH_overall_score(): Extension {
           .map((subscore) =>
             combinePow(
               subscore.factors.map((f: Factor) => {
-                const value = result.overallVector.data[f.factorIndex];
-                return typeof value === "number" ? value : 0;
+                return result.overallVector.data[f.factorIndex] ?? 0;
               }),
               subscore.subscoreWeight,
             ),

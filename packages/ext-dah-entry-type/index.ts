@@ -1,4 +1,4 @@
-import { assert, type EntryMeta, type Extension } from "@nrs-org/core";
+import { type EntryMeta, type Extension } from "@nrs-org/core";
 
 export type EntryType = StandardEntryType | NonStandardEntryType;
 
@@ -38,12 +38,7 @@ export default function DAH_entry_type(): DAH_entry_type {
       }
     },
     getType(meta: EntryMeta): EntryType | undefined {
-      const type = meta.DAH_entry_type;
-      assert(
-        typeof type === "string" || type === undefined,
-        "DAH_entry_type must be a string or undefined",
-      );
-      return type as EntryType | undefined;
+      return meta.DAH_entry_type as EntryType | undefined;
     },
   };
 }

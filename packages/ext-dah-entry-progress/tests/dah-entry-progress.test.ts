@@ -67,25 +67,4 @@ describe("DAH_entry_progress extension", () => {
     };
     expect(ext.getTotalMediaLengthSeconds(meta)).toBe(0);
   });
-
-  it("skips units with invalid/missing length", () => {
-    const meta: EntryProgressMeta = {
-      status: "Completed",
-      unitType: "episode",
-      units: [
-        // valid
-        makeUnit("a", 1, "hours"),
-        // @ts-expect-error explicit missing length
-        { id: "b", DAH_meta: makeEntryMeta() },
-        {
-          id: "d",
-          // @ts-expect-error malformed unit
-          length: { value: 20, unit: "lightyears" },
-          DAH_meta: makeEntryMeta(),
-        },
-      ],
-      DAH_meta: makeEntryMeta(),
-    };
-    expect(ext.getTotalMediaLengthSeconds(meta)).toBe(3600);
-  });
 });

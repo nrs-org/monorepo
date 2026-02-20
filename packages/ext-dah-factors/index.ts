@@ -171,7 +171,7 @@ export default function DAH_factors(
       return new Vector(
         factorScores.map((f) => {
           const v = input[f.shortName as FactorShortName];
-          return typeof v === "number" ? v : 0;
+          return v ?? 0;
         }),
       );
     },
