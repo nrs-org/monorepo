@@ -13,6 +13,7 @@ import {
   ScalarMatrix,
   DiagonalMatrix,
   identityMatrix,
+  assert,
 } from "@nrs-org/core";
 
 import type { Factor } from "@nrs-org/ext-dah-factors";
@@ -183,9 +184,7 @@ function initComposite(
     }
 
     const typeObj = obj[type];
-    if (!typeObj) {
-      throw new Error(`Missing composite role type: ${type}`);
-    }
+    assert(typeObj !== undefined, `Missing composite role type: ${type}`);
 
     const expandedChildren = typeObj.children.flatMap((role) => {
       if (isAtomicRoleType(role)) {
@@ -306,9 +305,10 @@ export default function DAH_entry_roles(
     let i = roleTypeLength;
     while (i < str.length) {
       const opChar = str[i];
-      if (opChar !== "*" && opChar !== "/") {
-        throw new Error("invalid operation");
-      }
+      assert(
+        opChar === "*" || opChar === "/",
+        `Invalid operator in role expression: ${opChar}`,
+      );
 
       const end = indexOfOpChar(str, i + 1) ?? str.length;
       let factor = parseFloat(str.substring(i + 1, end));
