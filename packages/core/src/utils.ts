@@ -2,40 +2,63 @@ export function assert(cond: boolean, msg?: string): asserts cond {
   if (!cond) throw new Error(msg || "Assertion failed");
 }
 
+// Epsilon values for numerical comparisons
+const COMBINE_POW_SMALL_FACTOR_THRESHOLD = 1e-4;
+const EPSILON_ABSOLUTE_VALUE = 1e-10;
+const EPSILON_SUM = 1e-10;
+
 export function signedPow(x: number, p: number): number {
   if (x >= 0) return Math.pow(x, p);
   return -Math.pow(-x, p);
 }
 
-export function combinePow(numbers: number[], factor: number) {
-  if (factor < 1e-4) {
-    // For very small factors, find values with largest absolute value
-    // that don't cancel out
-    
-    // Group values by their absolute value
-    const groups = new Map<number, number[]>();
-    for (const x of numbers) {
-      const abs = Math.abs(x);
-      if (!groups.has(abs)) groups.set(abs, []);
-      groups.get(abs)!.push(x);
-    }
-    
-    // Sort absolute values in descending order
-    const sortedAbs = Array.from(groups.keys()).sort((a, b) => b - a);
-    
-    // Find the first group that doesn't cancel
-    for (const abs of sortedAbs) {
-      const values = groups.get(abs)!;
-      const sum = values.reduce((a, b) => a + b, 0);
-      
-      // If this group doesn't cancel, return the first value
-      if (Math.abs(sum) >= 1e-10) {
-        return values[0];
+/**
+ * Combine numbers using signed power when factor is very small.
+ * Returns the value with largest absolute value that doesn't cancel out.
+ */
+function combinePowSmallFactor(numbers: number[]): number {
+  // Group values by their absolute value (with epsilon tolerance)
+  const groups: Array<{ abs: number; values: number[] }> = [];
+
+  for (const x of numbers) {
+    const abs = Math.abs(x);
+
+    // Find existing group with similar absolute value
+    let found = false;
+    for (const group of groups) {
+      if (Math.abs(group.abs - abs) < EPSILON_ABSOLUTE_VALUE) {
+        group.values.push(x);
+        found = true;
+        break;
       }
     }
-    
-    // All values cancel
-    return 0;
+
+    // Create new group if not found
+    if (!found) {
+      groups.push({ abs, values: [x] });
+    }
+  }
+
+  // Sort groups by absolute value in descending order
+  groups.sort((a, b) => b.abs - a.abs);
+
+  // Find the first group that doesn't cancel
+  for (const group of groups) {
+    const sum = group.values.reduce((a, b) => a + b, 0);
+
+    // If this group doesn't cancel, return the first value
+    if (Math.abs(sum) >= EPSILON_SUM) {
+      return group.values[0];
+    }
+  }
+
+  // All values cancel
+  return 0;
+}
+
+export function combinePow(numbers: number[], factor: number) {
+  if (factor < COMBINE_POW_SMALL_FACTOR_THRESHOLD) {
+    return combinePowSmallFactor(numbers);
   }
   const sum = numbers
     .map((x) => signedPow(x, 1.0 / factor))
