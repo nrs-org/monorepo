@@ -1,4 +1,4 @@
 // tsconfig for ext-dah-standards: extends root
 {
-  "extends": "../../tsconfig.json"
+  "extends": "../../tsconfig.base.json"
 }
