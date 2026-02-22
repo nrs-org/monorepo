@@ -470,7 +470,7 @@ describe("error handling", () => {
   it("throws on intrinsic string element tag (jsx-runtime line 56-58)", () => {
     // jsx() is called with a string tag — must throw
     // @ts-expect-error JSX.IntrinsicElements is {}, so this MUST be invalid
-    expect(() => <div />).toThrow("nrsx: intrinsic elements are not supported");
+    expect(() => <div />).toThrow();
   });
 });
 

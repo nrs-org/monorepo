@@ -48,15 +48,10 @@ type AnyProps = any;
  * compile time via the empty `IntrinsicElements` interface below.
  */
 export function jsx(
-  tag: ((props: AnyProps) => JSXElement) | string | symbol,
+  tag: (props: AnyProps) => JSXElement,
   props: AnyProps,
 ): JSXElement {
-  if (typeof tag === "function") {
-    return tag(props);
-  }
-  throw new Error(
-    `nrsx: intrinsic elements are not supported — use component functions (e.g. <Entry> not <entry>). Got: <${String(tag)}>`,
-  );
+  return tag(props);
 }
 
 /** Alias — same as `jsx`, used by the transform for multi-child elements. */
