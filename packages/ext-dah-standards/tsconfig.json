@@ -1,4 +1,7 @@
 // tsconfig for ext-dah-standards: extends root
 {
-  "extends": "../../tsconfig.base.json"
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsxImportSource": "@nrs-org/nrsx"
+  }
 }

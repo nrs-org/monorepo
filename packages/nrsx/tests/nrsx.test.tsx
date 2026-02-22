@@ -1,3 +1,4 @@
+/** @jsxImportSource @nrs-org/nrsx */
 import { describe, it, expect, beforeAll } from "bun:test";
 import { newContext } from "@nrs-org/core";
 import type { Data } from "@nrs-org/core";
@@ -11,9 +12,9 @@ import DAH_entry_type from "@nrs-org/ext-dah-entry-type";
 import DAH_validator_suppress from "@nrs-org/ext-dah-validator-suppress";
 
 import { buildData } from "../index";
+import { Document, Entry } from "../elements";
+
 import {
-  Document,
-  Entry,
   Cry,
   PADS,
   CryPADS,
@@ -30,13 +31,14 @@ import {
   Music,
   Visual,
   Writing,
-  AnimeConsumedProgress,
   Dropped,
   Meme,
   FeatureMusic,
   Remix,
   KilledBy,
-} from "../elements";
+} from "@nrs-org/ext-dah-standards/nrsx";
+
+import { AnimeConsumedProgress } from "@nrs-org/ext-dah-entry-progress/nrsx";
 
 // ---------------------------------------------------------------------------
 // Test context setup

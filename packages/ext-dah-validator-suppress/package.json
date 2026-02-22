@@ -3,11 +3,16 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./index.ts",
+    "./nrsx": "./nrsx.tsx"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5",
-    "@nrs-org/core": "*"
+    "@nrs-org/core": "*",
+    "@nrs-org/nrsx": "*"
   }
 }
