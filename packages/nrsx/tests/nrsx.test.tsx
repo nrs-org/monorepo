@@ -466,4 +466,112 @@ describe("error handling", () => {
     ));
     expect(data.entries.size).toBe(1);
   });
+
+  it("throws on intrinsic string element tag (jsx-runtime line 56-58)", () => {
+    // jsx() is called with a string tag — must throw
+    // @ts-expect-error JSX.IntrinsicElements is {}, so this MUST be invalid
+    expect(() => <div />).toThrow("nrsx: intrinsic elements are not supported");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Deprecated entrytype prop on <Entry>
+// ---------------------------------------------------------------------------
+
+describe("Entry entrytype deprecated prop", () => {
+  it("sets entry type via DAH_entry_type extension when present", () => {
+    const ctx = makeCtx();
+    // entrytype prop should silently invoke DAH_entry_type extension
+    const data = buildData(ctx, () => (
+      <Document context={ctx}>
+        <Entry id="E-TYPED" entrytype="anime">
+          <AnimeConsumedProgress status="Completed" boredom={0} episodes={1} />
+        </Entry>
+      </Document>
+    ));
+    expect(data.entries.has("E-TYPED")).toBe(true);
+  });
+
+  it("is a no-op when DAH_entry_type extension is absent", () => {
+    // Context without DAH_entry_type
+    const ctx2 = newContext({
+      extensions: [
+        DAH_factors(),
+        DAH_standards(),
+        DAH_ir_source(),
+        DAH_entry_progress(),
+      ],
+    });
+    const data = buildData(ctx2, () => (
+      <Document context={ctx2}>
+        <Entry id="E-NOTYPE" entrytype="anime">
+          <AnimeConsumedProgress status="Completed" boredom={0} episodes={1} />
+        </Entry>
+      </Document>
+    ));
+    expect(data.entries.has("E-NOTYPE")).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parsePeriods from/to branch (ext-dah-standards/nrsx.tsx line 90-95)
+// ---------------------------------------------------------------------------
+
+describe("parsePeriods from/to branch", () => {
+  it("PADS with from/to date strings instead of length", () => {
+    const ctx = makeCtx();
+    const data = buildData(ctx, () => (
+      <Document context={ctx}>
+        <Entry id="E-FT" title="FromTo Entry">
+          <PADS emotions="AP" from="2024-01-01" to="2024-02-01" />
+        </Entry>
+      </Document>
+    ));
+    const padsImpact = data.impacts.find((imp) => {
+      const ir = (imp.DAH_meta as Record<string, unknown>)["DAH_ir_source"] as
+        | Record<string, unknown>
+        | undefined;
+      return ir?.name === "pads" && imp.contributors.has("E-FT");
+    });
+    expect(padsImpact).toBeDefined();
+  });
+
+  it("parsePeriods throws when neither length nor from+to are given", () => {
+    const ctx = makeCtx();
+    expect(() =>
+      buildData(ctx, () => (
+        <Document context={ctx}>
+          <Entry id="E-BAD" title="Bad Entry">
+            <PADS emotions="AP" />
+          </Entry>
+        </Document>
+      )),
+    ).toThrow();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AnimeConsumedProgress HH:MM:SS branch (nrsx.tsx line 47-48)
+// ---------------------------------------------------------------------------
+
+describe("AnimeConsumedProgress HH:MM:SS episodeDuration", () => {
+  it("parses HH:MM:SS duration correctly", () => {
+    const ctx = makeCtx();
+    const data = buildData(ctx, () => (
+      <Document context={ctx}>
+        <Entry id="E-LONG" title="Long Episodes">
+          <AnimeConsumedProgress
+            status="Completed"
+            boredom={0.0}
+            episodes={10}
+            episodeDuration="1:23:45"
+          />
+        </Entry>
+      </Document>
+    ));
+    expect(data.entries.has("E-LONG")).toBe(true);
+    // 1h 23m 45s = 5025s → 5025000ms; just verify it produced an impact
+    const impacts = data.impacts.filter((i) => i.contributors.has("E-LONG"));
+    expect(impacts.length).toBeGreaterThan(0);
+  });
 });

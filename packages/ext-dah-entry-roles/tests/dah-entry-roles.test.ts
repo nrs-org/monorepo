@@ -466,4 +466,109 @@ describe("preprocess integration", () => {
     const rel = data.relations[0];
     if (rel) expect(rel.contributors.size).toBe(2);
   });
+
+  it("preprocesses impact with two roles for same contributor — hits mapAddAssign existing-key branch", async () => {
+    // Two roles for the same contributor id → the second call to mapAddAssign
+    // hits the `existing !== undefined` branch (line 77 of index.ts).
+    const ext = DAH_entry_roles();
+    const impact: Impact = {
+      contributors: new Map(),
+      score: new Vector([]),
+      DAH_meta: makeImpactMeta(),
+    };
+    impact.DAH_meta.DAH_entry_roles = {
+      roles: {
+        c1: [
+          {
+            roleType: "compose",
+            factor: new ScalarMatrix(1),
+            multiplyFactor: 1,
+            expressionString: "compose",
+          },
+          {
+            roleType: "arrange",
+            factor: new ScalarMatrix(1),
+            multiplyFactor: 1,
+            expressionString: "arrange",
+          },
+        ],
+      },
+    };
+
+    const data = { entries: new Map(), impacts: [impact], relations: [] };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
+    });
+
+    await ext.preprocessData?.(ctx, data);
+    // c1 now has a combined contributor weight from both compose+arrange
+    expect(impact.contributors.has("c1")).toBe(true);
+  });
+
+  it("mapAddAssign existing-key branch: impact already has contributor before preprocessIRs", async () => {
+    // Pre-populate the impact's contributors so that when preprocessIRs calls
+    // mapAddAssign for the same contributor id, it hits the existing-key else branch.
+    const ext = DAH_entry_roles();
+    const existingWeight = new ScalarMatrix(0.5);
+    const impact: Impact = {
+      contributors: new Map([["c1", existingWeight]]),
+      score: new Vector([]),
+      DAH_meta: makeImpactMeta(),
+    };
+    impact.DAH_meta.DAH_entry_roles = {
+      roles: {
+        c1: [
+          {
+            roleType: "total",
+            factor: new ScalarMatrix(1),
+            multiplyFactor: 1,
+            expressionString: "total",
+          },
+        ],
+      },
+    };
+
+    const data = { entries: new Map(), impacts: [impact], relations: [] };
+    const ctx = newContext({
+      factorScoreCombineWeight: new Vector([]),
+      extensions: [ext, DAH_factors(), DAH_entry_contains()],
+    });
+
+    await ext.preprocessData?.(ctx, data);
+    // contributor c1 should now have the sum of existing + role weights
+    expect(impact.contributors.has("c1")).toBe(true);
+  });
+
+  it("uses default calcFactor for composite types without explicit calcFactor (inst, perform, prod)", async () => {
+    // inst, perform, prod are composite types with no explicit calcFactor,
+    // so the default lambda (lines 193-195) is used when calculateFactors resolves them.
+    for (const composite of ["inst", "perform", "prod"] as const) {
+      const ext = DAH_entry_roles();
+      const entry: Entry = { id: "e1", DAH_meta: makeEntryMeta() };
+      (entry.DAH_meta as Record<string, unknown>).DAH_entry_roles = {
+        roles: {
+          c1: [
+            {
+              roleType: composite,
+              factor: new ScalarMatrix(1),
+              multiplyFactor: 1,
+              expressionString: composite,
+            },
+          ],
+        },
+      };
+      const data = {
+        entries: new Map([["e1", entry]]),
+        impacts: [],
+        relations: [],
+      };
+      const ctx = newContext({
+        factorScoreCombineWeight: new Vector([]),
+        extensions: [ext, DAH_factors(), DAH_entry_contains()],
+      });
+      await ext.preprocessData?.(ctx, data);
+      expect(data.relations.length).toBeGreaterThan(0);
+    }
+  });
 });

@@ -60,6 +60,28 @@ describe("DAH_entry_progress extension", () => {
     expect(ext.getTotalMediaLengthSeconds(meta, 10)).toBe(2.5 * 60 * 10);
   });
 
+  it("calculates total media length in seconds (uniform unit length — seconds)", () => {
+    const meta: EntryProgressMeta = {
+      status: "Completed",
+      unitType: "track",
+      uniformUnitLength: { value: 90, unit: "seconds" },
+      DAH_meta: makeEntryMeta(),
+    };
+    // 5 tracks × 90 seconds each
+    expect(ext.getTotalMediaLengthSeconds(meta, 5)).toBe(90 * 5);
+  });
+
+  it("calculates total media length in seconds (uniform unit length — hours)", () => {
+    const meta: EntryProgressMeta = {
+      status: "Completed",
+      unitType: "episode",
+      uniformUnitLength: { value: 0.5, unit: "hours" },
+      DAH_meta: makeEntryMeta(),
+    };
+    // 4 episodes × 0.5 hours each
+    expect(ext.getTotalMediaLengthSeconds(meta, 4)).toBe(0.5 * 3600 * 4);
+  });
+
   it("returns 0 if no known length", () => {
     const meta: EntryProgressMeta = {
       status: "Paused",
