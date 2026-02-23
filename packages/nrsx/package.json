@@ -5,6 +5,7 @@
   "module": "index.ts",
   "exports": {
     ".": "./index.ts",
+    "./elements": "./elements.ts",
     "./jsx-runtime": "./jsx-runtime.ts",
     "./jsx-dev-runtime": "./jsx-runtime.ts"
   },
