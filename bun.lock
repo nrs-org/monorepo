@@ -72,7 +72,21 @@
       "version": "0.1.0",
       "peerDependencies": {
         "@nrs-org/core": "*",
+        "@nrs-org/ext-dah-standards": "*",
+        "@nrs-org/nrsx": "*",
         "typescript": "^5",
+      },
+    },
+    "packages/ext-dah-entry-roles": {
+      "name": "@nrs-org/ext-dah-entry-roles",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@types/bun": "^1.3.9",
+      },
+      "peerDependencies": {
+        "@nrs-org/core": "*",
+        "@nrs-org/ext-dah-entry-contains": "*",
+        "@nrs-org/ext-dah-factors": "*",
       },
     },
     "packages/ext-dah-entry-title": {
@@ -137,6 +151,7 @@
         "@nrs-org/ext-dah-factors": "*",
         "@nrs-org/ext-dah-ir-source": "*",
         "@nrs-org/ext-dah-validator-suppress": "*",
+        "@nrs-org/nrsx": "*",
       },
     },
     "packages/ext-dah-validator-suppress": {
@@ -146,7 +161,25 @@
       },
       "peerDependencies": {
         "@nrs-org/core": "*",
+        "@nrs-org/nrsx": "*",
         "typescript": "^5",
+      },
+    },
+    "packages/nrsx": {
+      "name": "@nrs-org/nrsx",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@nrs-org/ext-dah-entry-progress": "workspace:*",
+        "@nrs-org/ext-dah-entry-title": "workspace:*",
+        "@nrs-org/ext-dah-entry-type": "workspace:*",
+        "@nrs-org/ext-dah-factors": "workspace:*",
+        "@nrs-org/ext-dah-ir-source": "workspace:*",
+        "@nrs-org/ext-dah-standards": "workspace:*",
+        "@nrs-org/ext-dah-validator-suppress": "workspace:*",
+        "@types/bun": "^1.3.9",
+      },
+      "peerDependencies": {
+        "@nrs-org/core": "*",
       },
     },
   },
@@ -191,6 +224,8 @@
 
     "@nrs-org/ext-dah-entry-progress": ["@nrs-org/ext-dah-entry-progress@workspace:packages/ext-dah-entry-progress"],
 
+    "@nrs-org/ext-dah-entry-roles": ["@nrs-org/ext-dah-entry-roles@workspace:packages/ext-dah-entry-roles"],
+
     "@nrs-org/ext-dah-entry-title": ["@nrs-org/ext-dah-entry-title@workspace:packages/ext-dah-entry-title"],
 
     "@nrs-org/ext-dah-entry-type": ["@nrs-org/ext-dah-entry-type@workspace:packages/ext-dah-entry-type"],
@@ -204,6 +239,8 @@
     "@nrs-org/ext-dah-standards": ["@nrs-org/ext-dah-standards@workspace:packages/ext-dah-standards"],
 
     "@nrs-org/ext-dah-validator-suppress": ["@nrs-org/ext-dah-validator-suppress@workspace:packages/ext-dah-validator-suppress"],
+
+    "@nrs-org/nrsx": ["@nrs-org/nrsx@workspace:packages/nrsx"],
 
     "@types/bun": ["@types/bun@1.3.9", "", { "dependencies": { "bun-types": "1.3.9" } }, "sha512-KQ571yULOdWJiMH+RIWIOZ7B2RXQGpL1YQrBtLIV3FqDcCu6FsbFUBwhdKUlCKUpS3PJDsHlJ1QKlpxoVR+xtw=="],
 

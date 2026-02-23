@@ -1,30 +1,20 @@
 {
-  "compilerOptions": {
-    // Environment setup & latest features
-    "lib": ["ESNext"],
-    "target": "ESNext",
-    "module": "Preserve",
-    "moduleDetection": "force",
-    "jsx": "react-jsx",
-    "types": ["bun"],
-    "allowJs": true,
-
-    // Bundler mode
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
-    "noEmit": true,
-
-    // Best practices
-    "strict": true,
-    "skipLibCheck": true,
-    "noFallthroughCasesInSwitch": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    // Some stricter flags (disabled by default)
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
-  }
+  "files": [],
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/ext-dah-additional-sources" },
+    { "path": "./packages/ext-dah-entry-bestgirl" },
+    { "path": "./packages/ext-dah-entry-contains" },
+    { "path": "./packages/ext-dah-entry-id-impl" },
+    { "path": "./packages/ext-dah-entry-progress" },
+    { "path": "./packages/ext-dah-entry-roles" },
+    { "path": "./packages/ext-dah-entry-title" },
+    { "path": "./packages/ext-dah-entry-type" },
+    { "path": "./packages/ext-dah-factors" },
+    { "path": "./packages/ext-dah-ir-source" },
+    { "path": "./packages/ext-dah-overall-score" },
+    { "path": "./packages/ext-dah-standards" },
+    { "path": "./packages/ext-dah-validator-suppress" },
+    { "path": "./packages/nrsx" }
+  ]
 }
