@@ -14,6 +14,8 @@
     { "path": "./packages/ext-dah-ir-source" },
     { "path": "./packages/ext-dah-overall-score" },
     { "path": "./packages/ext-dah-standards" },
+    { "path": "./packages/ext-dah-serialize" },
+    { "path": "./packages/ext-dah-serialize-json" },
     { "path": "./packages/ext-dah-validator-suppress" },
     { "path": "./packages/nrsx" }
   ]
