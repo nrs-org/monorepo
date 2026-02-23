@@ -21,6 +21,17 @@ describe("ext-dah-overall-score", () => {
     expect(ext.dependencies?.() ?? []).toEqual(["DAH_factors"]);
   });
 
+  it("sets and gets overall score on result meta", () => {
+    const ext = DAH_overall_score();
+    const meta = makeResultMeta();
+    expect(ext.getOverallScore(meta)).toBeUndefined();
+    ext.setOverallScore(meta, 3.14);
+    expect(ext.getOverallScore(meta)).toBe(3.14);
+    ext.setOverallScore(meta, undefined);
+    expect(ext.getOverallScore(meta)).toBeUndefined();
+    expect(meta).not.toContainKey("DAH_overall_score");
+  });
+
   it("computes overall score correctly (mocked)", () => {
     const dahFactors = DAHFactors;
     const ext = DAH_overall_score();
@@ -34,7 +45,7 @@ describe("ext-dah-overall-score", () => {
     } satisfies Result;
     const results = new Map<string, Result>([["A", result]]);
     ext.postProcess?.(ctx, results);
-    expect(result.DAH_meta.DAH_overall_score).toBeDefined();
-    expect(typeof result.DAH_meta.DAH_overall_score).toBe("number");
+    expect(ext.getOverallScore(result.DAH_meta)).toBeDefined();
+    expect(typeof ext.getOverallScore(result.DAH_meta)).toBe("number");
   });
 });
