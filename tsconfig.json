@@ -3,6 +3,7 @@
   "references": [
     { "path": "./packages/core" },
     { "path": "./packages/ext-dah-additional-sources" },
+    { "path": "./packages/ext-dah-anime-normalize" },
     { "path": "./packages/ext-dah-entry-bestgirl" },
     { "path": "./packages/ext-dah-entry-contains" },
     { "path": "./packages/ext-dah-entry-id-impl" },
