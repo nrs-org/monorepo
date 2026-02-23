@@ -16,8 +16,6 @@
 import { assert, makeEntryMeta } from "@nrs-org/core";
 import type { Entry } from "@nrs-org/core";
 
-import type { Context } from "@nrs-org/core";
-
 import {
   asDocument,
   asEntry,
@@ -32,8 +30,6 @@ import {
 // ---------------------------------------------------------------------------
 
 export interface DocumentProps {
-  /** The NRS processing context (carries extensions). */
-  context: Context;
   /** Top-level nodes: entries, standalone impacts, or relations. */
   children?: NrsxNode | NrsxNode[];
 }

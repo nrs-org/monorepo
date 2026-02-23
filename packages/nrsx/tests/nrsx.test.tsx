@@ -68,7 +68,7 @@ describe("buildData — integration", () => {
 
   beforeAll(() => {
     data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         {/* Entry 1: anime with consumed progress, visual, writing */}
         <Entry id="E-ANIME-1" title="Test Anime 1">
           <AnimeConsumedProgress
@@ -302,7 +302,7 @@ describe("buildData — integration", () => {
     // Calling buildData again should work without state bleed.
     const ctx2 = makeCtx();
     const data2 = buildData(ctx2, () => (
-      <Document context={ctx2}>
+      <Document>
         <Entry id="SOLO" title="Solo Entry">
           <AnimeConsumedProgress
             status="Completed"
@@ -327,7 +327,7 @@ describe("parseEmotions", () => {
     let threw = false;
     try {
       buildData(ctx, () => (
-        <Document context={ctx}>
+        <Document>
           <Entry id="E1" title="E1">
             <Cry emotions="INVALID_FACTOR_XYZ" />
           </Entry>
@@ -342,7 +342,7 @@ describe("parseEmotions", () => {
   it("handles multi-emotion weighted string", () => {
     const ctx = makeCtx();
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <Entry id="E1" title="E1">
           <Cry emotions="AP-0.7:CU-0.3" />
         </Entry>
@@ -385,7 +385,7 @@ describe("user-defined function components", () => {
     }
 
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <StandardAnime id="E-CUSTOM-1" title="Custom Anime A" />
         <StandardAnime id="E-CUSTOM-2" title="Custom Anime B" />
       </Document>
@@ -415,7 +415,7 @@ describe("error handling", () => {
     const ctx = makeCtx();
     expect(() =>
       buildData(ctx, () => (
-        <Document context={ctx}>
+        <Document>
           <Entry id="OUTER" title="Outer">
             <Entry id="INNER" title="Inner" />
           </Entry>
@@ -428,7 +428,7 @@ describe("error handling", () => {
     const ctx = makeCtx();
     expect(() =>
       buildData(ctx, () => (
-        <Document context={ctx}>
+        <Document>
           <Cry emotions="AP" />
         </Document>
       )),
@@ -439,7 +439,7 @@ describe("error handling", () => {
     const ctx = makeCtx();
     expect(() =>
       buildData(ctx, () => (
-        <Document context={ctx}>
+        <Document>
           <Entry id="E1" title="E1">
             <Visual type={"badtype" as "animated"} base={0.5} unique={0.3} />
           </Entry>
@@ -458,7 +458,7 @@ describe("error handling", () => {
 
     // Subsequent call should still work.
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <Entry id="RECOVERY" title="Recovery">
           <AnimeConsumedProgress status="Completed" boredom={0} episodes={1} />
         </Entry>
@@ -483,7 +483,7 @@ describe("Entry entrytype deprecated prop", () => {
     const ctx = makeCtx();
     // entrytype prop should silently invoke DAH_entry_type extension
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <Entry id="E-TYPED" entrytype="anime">
           <AnimeConsumedProgress status="Completed" boredom={0} episodes={1} />
         </Entry>
@@ -503,7 +503,7 @@ describe("Entry entrytype deprecated prop", () => {
       ],
     });
     const data = buildData(ctx2, () => (
-      <Document context={ctx2}>
+      <Document>
         <Entry id="E-NOTYPE" entrytype="anime">
           <AnimeConsumedProgress status="Completed" boredom={0} episodes={1} />
         </Entry>
@@ -521,7 +521,7 @@ describe("parsePeriods from/to branch", () => {
   it("PADS with from/to date strings instead of length", () => {
     const ctx = makeCtx();
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <Entry id="E-FT" title="FromTo Entry">
           <PADS emotions="AP" from="2024-01-01" to="2024-02-01" />
         </Entry>
@@ -540,7 +540,7 @@ describe("parsePeriods from/to branch", () => {
     const ctx = makeCtx();
     expect(() =>
       buildData(ctx, () => (
-        <Document context={ctx}>
+        <Document>
           <Entry id="E-BAD" title="Bad Entry">
             <PADS emotions="AP" />
           </Entry>
@@ -558,7 +558,7 @@ describe("AnimeConsumedProgress HH:MM:SS episodeDuration", () => {
   it("parses HH:MM:SS duration correctly", () => {
     const ctx = makeCtx();
     const data = buildData(ctx, () => (
-      <Document context={ctx}>
+      <Document>
         <Entry id="E-LONG" title="Long Episodes">
           <AnimeConsumedProgress
             status="Completed"

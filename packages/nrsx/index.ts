@@ -17,7 +17,7 @@
  * // tsconfig.json must set: "jsxImportSource": "@nrs-org/nrsx"
  *
  * const data = buildData(ctx, () => (
- *   <Document context={ctx}>
+ *   <Document>
  *     <Entry id="A-MAL-1" title="Appalling Anime">
  *       <Cry emotions="AU" />
  *       <Visual type="animated" base={0.5} unique={0.4} />
