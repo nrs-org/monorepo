@@ -241,8 +241,8 @@ describe("processContext extensions", () => {
 
     await processContext(ctx, data);
     // preprocessData may run in other contexts; ignore optional 'pre' when asserting order
-    // extA.mustRunAfter returning ["B"] means B must run after A -> A then B
-    expect(calls.filter((c) => c !== "pre")).toEqual(["A", "B"]);
+    // extA.mustRunAfter returning ["B"] means A must run after B -> B then A
+    expect(calls.filter((c) => c !== "pre")).toEqual(["B", "A"]);
   });
 
   it("throws when mustRunAfter hints cycle", async () => {

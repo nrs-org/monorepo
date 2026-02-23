@@ -20,9 +20,9 @@ export interface Extension {
 
   // Optional per-extension ordering hint. When present this function is
   // called with the list of enabled extension names and the hook being
-  // ordered and should return the list of extension names that MUST run
-  // after this extension for that hook. This allows extension authors to
-  // express ordering constraints that are independent of `dependencies()`.
+  // ordered and should return the list of extension names that THIS
+  // extension must run after for that hook. This allows extension authors
+  // to express ordering constraints that are independent of `dependencies()`.
   // The core will aggregate these hints when computing final ordering.
   mustRunAfter?: (extensions: string[], hook: HookName) => string[];
 
@@ -65,10 +65,10 @@ export function computeHookOrder(
   enabled: Record<string, Extension | undefined>,
   hook: HookName,
 ): string[] {
-  // Build graph from all enabled extensions' mustRunAfter hints for this hook,
-  // then perform a strict topological sort. If a cycle exists we throw to
-  // indicate invalid ordering hints. The final result filters to only those
-  // extensions that actually implement the requested hook.
+  // Build graph from all enabled extensions' mustRunAfter hints for this hook.
+  // mustRunAfter(extensions, hook) returns the list of extensions that the
+  // current extension must run AFTER. We add edges "other -> name" so that
+  // topsort places `other` before `name`, meaning `name` runs after `other`.
   const g = new Graph({ directed: true });
   const names = Object.keys(enabled);
   for (const name of names) g.setNode(name);
@@ -77,7 +77,7 @@ export function computeHookOrder(
     const after = ext.mustRunAfter?.(names, hook) ?? [];
     for (const other of after) {
       if (!g.hasNode(other)) continue; // ignore hints about disabled extensions
-      g.setEdge(name, other);
+      g.setEdge(other, name);
     }
   }
 
