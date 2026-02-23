@@ -116,12 +116,12 @@ export default (
       <P.NEI base={-0.5} emotions="MU-0.5:AU-0.5">
         <P.Contributor id="A-MAL-40879" factor={0.3} />
         <P.Contributor id="A-MAL-48916" factor={0.6} />
-        <P.Contributor id="A-MAL-15051" factor="0.1/6" />
-        <P.Contributor id="A-MAL-19111" factor="0.1/6" />
-        <P.Contributor id="A-MAL-24997" factor="0.1/6" />
-        <P.Contributor id="A-MAL-32526" factor="0.1/6" />
-        <P.Contributor id="A-MAL-34973" factor="0.1/6" />
-        <P.Contributor id="A-MAL-37027" factor="0.1/6" />
+        <P.Contributor id="A-MAL-15051" factor={0.1 / 6} />
+        <P.Contributor id="A-MAL-19111" factor={0.1 / 6} />
+        <P.Contributor id="A-MAL-24997" factor={0.1 / 6} />
+        <P.Contributor id="A-MAL-32526" factor={0.1 / 6} />
+        <P.Contributor id="A-MAL-34973" factor={0.1 / 6} />
+        <P.Contributor id="A-MAL-37027" factor={0.1 / 6} />
       </P.NEI>
     </P.Entry>
     <P.Entry id="M-VGMDB-AL-34051" title="Snow halation / μ's">

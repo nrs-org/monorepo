@@ -165,7 +165,8 @@ export default (
       {/* my oshi frfr */}
       {/* see https://www.facebook.com/photo/?fbid=6378175832271871 */}
       {/* blame AOTP (basically neo-NAP) */}
-      <P.Waifu from="2023-07-26" />
+      {/* oshi is classified as waifu in NRS */}
+      <P.Waifu waifu="Koseki Bijou" from="2023-07-26" />
       {/* lmfao higher visual than himeno sena (not really) */}
       {/* this is for the model btw */}
       <P.Visual type="animatedGachaCardArt" base={1} unique={0.5} />

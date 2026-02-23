@@ -14,11 +14,7 @@ export default (
       {/* hekiru ngl is also good */}
       {/* i think this is the best char design vn ever idk */}
       {/* so many routes to choose lol */}
-      <P.ConsumedProgress
-        status="Temporarily On-Hold"
-        boredom={1}
-        duration="3:00:00"
-      />
+      <P.ConsumedProgress status="Paused" boredom={1} duration="3:00:00" />
       <P.Visual type="visualNovel" base={0.6} unique={0.4} />
       <P.NEI base={0.5} emotions="MP" />
       <P.NEI base={0.25} emotions="AP" />

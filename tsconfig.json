@@ -1,24 +1,6 @@
 {
-  "files": [],
-  "references": [
-    { "path": "./packages/core" },
-    { "path": "./packages/ext-dah-additional-sources" },
-    { "path": "./packages/ext-dah-anime-normalize" },
-    { "path": "./packages/ext-dah-entry-bestgirl" },
-    { "path": "./packages/ext-dah-entry-contains" },
-    { "path": "./packages/ext-dah-entry-id-impl" },
-    { "path": "./packages/ext-dah-entry-progress" },
-    { "path": "./packages/ext-dah-entry-roles" },
-    { "path": "./packages/ext-dah-entry-title" },
-    { "path": "./packages/ext-dah-entry-type" },
-    { "path": "./packages/ext-dah-factors" },
-    { "path": "./packages/ext-dah-ir-source" },
-    { "path": "./packages/ext-dah-overall-score" },
-    { "path": "./packages/ext-dah-standards" },
-    { "path": "./packages/ext-dah-serialize" },
-    { "path": "./packages/ext-dah-serialize-json" },
-    { "path": "./packages/ext-dah-validator-suppress" },
-    { "path": "./packages/nrsx" },
-    { "path": "./packages/nrs-impl" }
-  ]
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": false
+  }
 }

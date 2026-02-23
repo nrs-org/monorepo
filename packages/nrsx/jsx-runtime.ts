@@ -47,10 +47,10 @@ type AnyProps = any;
  * intrinsic element) throws at runtime and is a TypeScript error at
  * compile time via the empty `IntrinsicElements` interface below.
  */
-export function jsx(
-  tag: (props: AnyProps) => JSXElement,
+export function jsx<T extends JSXElement>(
+  tag: (props: AnyProps) => T,
   props: AnyProps,
-): JSXElement {
+): T {
   return tag(props);
 }
 

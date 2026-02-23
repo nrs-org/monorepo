@@ -204,12 +204,14 @@ export default (
       <P.Visual type="animated" base={0.5} unique={0.4} />
       {/* the animation tho */}
       {/* description = "Animation" */}
-      <P.RegularImpact>
-        <P.Score>
-          <P.Component value={0.5} factor="Art.Visual" />
-          <P.Component value={0.4} factor="Emotion.AP" />
-        </P.Score>
-      </P.RegularImpact>
+      {/* <P.RegularImpact> */}
+      {/*   <P.Score> */}
+      {/*     <P.Component value={0.5} factor="Art.Visual" /> */}
+      {/*     <P.Component value={0.4} factor="Emotion.AP" /> */}
+      {/*   </P.Score> */}
+      {/* </P.RegularImpact> */}
+      {/* visual is already counted above, so it becomes a NEI */}
+      <P.NEI base={0.5} emotions="AP" />
       {/* OP */}
       <P.FeatureMusic id="M-VGMDB-AL-113295-1" />
       <P.Writing character={0.3} story={0.7} pacing={0.7} originality={0.6} />
@@ -233,14 +235,12 @@ export default (
     </P.Entry>
     <P.Entry id="M-20220113T184042-1" title="Magibeat">
       <P.ValidatorSuppress rules="dah-entry-no-consumed;dah-no-progress" />
-      <P.Contains factor={0.5}>
-        <P.Entry id="M-20220113T184042-3" title="Colorful - Magibeat Remix">
-          {/* Length source: https://www.nicovideo.jp/watch/sm22151925 */}
-          <P.Music base={0.35} />
-          <P.MusicConsumedProgress length="4:35" />
-          <P.Role id="M-VGMDB-AR-11829" roles="vocal+image/2" />
-        </P.Entry>
-      </P.Contains>
+    </P.Entry>
+    <P.Entry id="M-20220113T184042-3" title="Colorful - Magibeat Remix">
+      {/* Length source: https://www.nicovideo.jp/watch/sm22151925 */}
+      <P.Music base={0.35} />
+      <P.MusicConsumedProgress length="4:35" />
+      <P.Role id="M-VGMDB-AR-11829" roles="vocal+image/2" />
     </P.Entry>
   </P.Document>
 );

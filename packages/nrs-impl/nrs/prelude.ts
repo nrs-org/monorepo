@@ -15,18 +15,25 @@ export {
   SleeplessNight,
   Politics,
   Additional,
+  InterestField,
   Music,
   Visual,
   Writing,
+  Consumed,
   Dropped,
   Meme,
   FeatureMusic,
   Remix,
   KilledBy,
   OsuSong,
+  Contributor,
+  RegularImpact,
+  Score,
+  Component,
 } from "@nrs-org/ext-dah-standards/nrsx";
 export {
   AnimeConsumedProgress,
+  ConsumedProgress,
   MusicConsumedProgress,
 } from "@nrs-org/ext-dah-entry-progress/nrsx";
 export { ValidatorSuppress } from "@nrs-org/ext-dah-validator-suppress/nrsx";

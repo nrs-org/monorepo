@@ -933,10 +933,12 @@ export default (
       {/* This is very demotivating for me... */}
       {/* hahdajhdfjsdkfkjsdhfsjdakf sena */}
       {/* jfhasjfkhsdjkfsdhfk stream alice */}
+      {/* womp womp go write im glad youre evil too you lazy bitch */}
+      {/* stream moshiunmei btw */}
       <P.BestGirl name="Mona Narumi" />
       {/* it's real now ladies and gentlemen */}
       {/* https://github.com/btmxh/nrs-impl/discussions/539#discussioncomment-9013102 */}
-      <P.Waifu from="2024-04-05" to="2025-09-26" />
+      <P.Waifu waifu="Mona Narumi" from="2024-04-05" to="2025-09-26" />
       {/* i'm sorry but the hype of this manga is just unreal bro */}
       <P.EHI />
       {/* i'm sorry but national waifu manga with visual 0.5 is just unreal bro */}

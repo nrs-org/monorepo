@@ -8,6 +8,7 @@
     "jsx": "react-jsx",
     "types": ["bun"],
     "allowJs": true,
+    "composite": true,
 
     // Bundler mode
     "moduleResolution": "bundler",

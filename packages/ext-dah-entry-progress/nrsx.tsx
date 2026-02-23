@@ -1,13 +1,14 @@
 /**
  * NRSX components for `@nrs-org/ext-dah-entry-progress`.
  *
- * Provides the `AnimeConsumedProgress` JSX component, which sets entry progress
- * metadata via `ext-dah-entry-progress` and records an `animeConsumed` impact
- * via `ext-dah-standards`.
+ * Provides JSX components for entry progress tracking:
+ * `ConsumedProgress`, `AnimeConsumedProgress`, and `MusicConsumedProgress`.
+ * Each sets entry progress metadata via `ext-dah-entry-progress` and records
+ * the corresponding consumed impact via `ext-dah-standards`.
  *
  * Usage:
  * ```tsx
- * import { AnimeConsumedProgress } from "@nrs-org/ext-dah-entry-progress/nrsx";
+ * import { ConsumedProgress, AnimeConsumedProgress } from "@nrs-org/ext-dah-entry-progress/nrsx";
  * ```
  */
 
@@ -99,6 +100,54 @@ export function AnimeConsumedProgress(
         props.boredom,
         props.episodes,
         episodeDurationMs,
+      ),
+    );
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ConsumedProgress component
+// ---------------------------------------------------------------------------
+
+export interface ConsumedProgressProps {
+  status: ProgressStatus;
+  boredom: number;
+  /** Total consumed duration in `MM:SS` or `HH:MM:SS` format. */
+  duration: string;
+}
+
+/**
+ * Generic consumption progress metadata + consumed impact.
+ *
+ * Sets entry progress metadata via `ext-dah-entry-progress` (if registered)
+ * and records a `consumed` impact via `ext-dah-standards`.
+ */
+export function ConsumedProgress(props: ConsumedProgressProps): ImpactNode {
+  return asImpact((rc) => {
+    assert(
+      rc.currentEntry !== null,
+      "nrsx: <ConsumedProgress> must be inside an <Entry>",
+    );
+
+    const durationMs = parseEpisodeDuration(props.duration);
+
+    const progressExt = rc.context.extensions["DAH_entry_progress"] as
+      | ExtDAH_entry_progress
+      | undefined;
+    if (progressExt) {
+      progressExt.setProgress(rc.currentEntry.DAH_meta, {
+        status: props.status,
+        DAH_meta: {},
+      });
+    }
+
+    const standards = getExt<ExtDAH_standards>(rc, "DAH_standards");
+    rc.impacts.push(
+      standards.consumed(
+        rc.context,
+        new Map([[rc.currentEntry.id, new ScalarMatrix(1.0)]]),
+        props.boredom,
+        durationMs,
       ),
     );
   });

@@ -13,6 +13,7 @@
  *   - `Entry(...)` returns `EntryNode`
  *   - impact components return `ImpactNode`
  *   - relation components return `RelationNode`
+ *   - `Contributor(...)` returns `ContributorNode`
  *
  * Due to how TypeScript's JSX transform works, JSX child expressions always
  * widen to `JSX.Element` (= `NrsxNode`). Children props therefore accept
@@ -26,6 +27,9 @@ declare const _document: unique symbol;
 declare const _entry: unique symbol;
 declare const _impact: unique symbol;
 declare const _relation: unique symbol;
+declare const _contributor: unique symbol;
+
+export type NrsxNode = (rc: RenderContext) => void;
 
 /** Returned by `Document(...)`. Only accepted by `buildData`. */
 export type DocumentNode = ((rc: RenderContext) => void) & {
@@ -47,11 +51,10 @@ export type RelationNode = ((rc: RenderContext) => void) & {
   readonly [_relation]: true;
 };
 
-/**
- * Union of all nrsx node types. Used as `JSX.Element` so that the TypeScript
- * JSX transform can type all JSX expressions uniformly.
- */
-export type NrsxNode = DocumentNode | EntryNode | ImpactNode | RelationNode;
+/** Returned by `Contributor(...)`. Valid as a child of impact/relation components. */
+export type ContributorNode = ((rc: RenderContext) => void) & {
+  readonly [_contributor]: true;
+};
 
 // ---------------------------------------------------------------------------
 // Internal casting helpers — used only by element implementations.
@@ -75,6 +78,13 @@ export function asImpact(fn: (rc: RenderContext) => void): ImpactNode {
 /** Cast a plain closure to `RelationNode`. */
 export function asRelation(fn: (rc: RenderContext) => void): RelationNode {
   return fn as RelationNode;
+}
+
+/** Cast a plain closure to `ContributorNode`. */
+export function asContributor(
+  fn: (rc: RenderContext) => void,
+): ContributorNode {
+  return fn as ContributorNode;
 }
 
 /** Normalise a children prop (undefined | T | T[]) into a flat T[]. */

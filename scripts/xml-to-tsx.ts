@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * xml-to-tsx.ts
  *

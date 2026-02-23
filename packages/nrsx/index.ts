@@ -55,6 +55,8 @@ export function buildData(context: Context, fn: () => NrsxNode): Data {
     relations: [] as Relation[],
     currentEntry: null,
     currentImpact: null,
+    currentContributors: null,
+    currentScore: null,
   };
 
   // fn() builds the closure tree (no mutations yet), then we call the
@@ -71,12 +73,20 @@ export type {
   EntryNode,
   ImpactNode,
   RelationNode,
+  ContributorNode,
   NrsxNode,
 } from "./types";
 
 // Re-export casting helpers — needed by extension packages to implement
 // their own NRSX components without depending on nrsx internals directly.
-export { asImpact, asRelation, asEntry, asDocument } from "./types";
+export {
+  asImpact,
+  asRelation,
+  asEntry,
+  asDocument,
+  asContributor,
+  toArray,
+} from "./types";
 
 // Re-export RenderContext type — needed by extension component implementations.
 export type { RenderContext } from "./context";

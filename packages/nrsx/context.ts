@@ -1,4 +1,11 @@
-import type { Context, Entry, Impact, Relation, Id } from "@nrs-org/core";
+import type {
+  Context,
+  Entry,
+  Impact,
+  Relation,
+  Id,
+  Vector,
+} from "@nrs-org/core";
 
 /**
  * The render context passed explicitly through the JSX closure chain by
@@ -25,4 +32,20 @@ export interface RenderContext {
    * `null` outside any impact element.
    */
   currentImpact: Impact | null;
+  /**
+   * Accumulates contributor entries while evaluating children of an impact/relation
+   * component. Set to a fresh Map before calling child closures, then read by the
+   * parent component after children execute. `null` outside any impact/relation element.
+   *
+   * Keys are entry id strings; values are scalar factors (typically 1.0).
+   * The impact/relation component converts this to a `Contributors` Map using
+   * `ScalarMatrix` before passing it to the extension method.
+   */
+  currentContributors: Map<string, number> | null;
+  /**
+   * Set to the score vector being built while evaluating children of a
+   * `<RegularImpact>` / `<Score>` pair. `<Component>` children write individual
+   * factor values into this vector. `null` outside any such context.
+   */
+  currentScore: Vector | null;
 }
