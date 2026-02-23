@@ -36,6 +36,25 @@
         "@nrs-org/core": "*",
       },
     },
+    "packages/ext-dah-anime-normalize": {
+      "name": "@nrs-org/ext-dah-anime-normalize",
+      "version": "0.1.0",
+      "devDependencies": {
+        "@nrs-org/ext-dah-entry-progress": "workspace:*",
+        "@nrs-org/ext-dah-entry-title": "workspace:*",
+        "@nrs-org/ext-dah-entry-type": "workspace:*",
+        "@nrs-org/ext-dah-ir-source": "workspace:*",
+        "@nrs-org/ext-dah-validator-suppress": "workspace:*",
+        "@nrs-org/nrsx": "workspace:*",
+        "@types/bun": "^1.3.9",
+      },
+      "peerDependencies": {
+        "@nrs-org/core": "*",
+        "@nrs-org/ext-dah-factors": "*",
+        "@nrs-org/ext-dah-overall-score": "*",
+        "@nrs-org/ext-dah-standards": "*",
+      },
+    },
     "packages/ext-dah-entry-bestgirl": {
       "name": "@nrs-org/ext-dah-entry-bestgirl",
       "version": "0.1.0",
@@ -215,6 +234,8 @@
     "@nrs-org/core": ["@nrs-org/core@workspace:packages/core"],
 
     "@nrs-org/ext-dah-additional-sources": ["@nrs-org/ext-dah-additional-sources@workspace:packages/ext-dah-additional-sources"],
+
+    "@nrs-org/ext-dah-anime-normalize": ["@nrs-org/ext-dah-anime-normalize@workspace:packages/ext-dah-anime-normalize"],
 
     "@nrs-org/ext-dah-entry-bestgirl": ["@nrs-org/ext-dah-entry-bestgirl@workspace:packages/ext-dah-entry-bestgirl"],
 
