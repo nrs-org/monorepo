@@ -367,6 +367,60 @@ describe("parseEmotions", () => {
 // ---------------------------------------------------------------------------
 
 describe("user-defined function components", () => {
+  it("supports nesting a Document inside another Document (include pattern)", () => {
+    const ctx = makeCtx();
+
+    // Simulates a franchise file returning its own <Document>.
+    function Franchise() {
+      return (
+        <Document>
+          <Entry id="F-1" title="Franchise Entry 1">
+            <AnimeConsumedProgress
+              status="Completed"
+              boredom={0.1}
+              episodes={12}
+            />
+          </Entry>
+          <Entry id="F-2" title="Franchise Entry 2">
+            <AnimeConsumedProgress
+              status="Completed"
+              boredom={0.2}
+              episodes={24}
+            />
+          </Entry>
+        </Document>
+      );
+    }
+
+    const data = buildData(ctx, () => (
+      <Document>
+        <Franchise />
+        <Entry id="TOP-1" title="Top-level Entry">
+          <AnimeConsumedProgress
+            status="Completed"
+            boredom={0.0}
+            episodes={1}
+          />
+        </Entry>
+      </Document>
+    ));
+
+    expect(data.entries.size).toBe(3);
+    expect(data.entries.has("F-1")).toBe(true);
+    expect(data.entries.has("F-2")).toBe(true);
+    expect(data.entries.has("TOP-1")).toBe(true);
+    // All impacts land in the same flat list regardless of Document nesting.
+    expect(data.impacts.filter((i) => i.contributors.has("F-1")).length).toBe(
+      1,
+    );
+    expect(data.impacts.filter((i) => i.contributors.has("F-2")).length).toBe(
+      1,
+    );
+    expect(data.impacts.filter((i) => i.contributors.has("TOP-1")).length).toBe(
+      1,
+    );
+  });
+
   it("supports composing entries from custom components", () => {
     const ctx = makeCtx();
 
