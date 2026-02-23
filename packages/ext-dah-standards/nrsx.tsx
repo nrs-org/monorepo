@@ -585,3 +585,31 @@ export function KilledBy(props: KilledByProps): RelationNode {
     );
   });
 }
+
+// --
+
+export interface OsuSongProps {
+  /** Personal enjoyment factor (0–1, maps to 0–0.5 AP). */
+  personal: number;
+  /** Community/mapping quality factor (0–1, maps to 0–0.2 AP). */
+  community?: number;
+}
+
+/** Osu! song impact — personal enjoyment + community mapping quality. */
+export function OsuSong(props: OsuSongProps): ImpactNode {
+  return asImpact((rc) => {
+    assert(
+      rc.currentEntry !== null,
+      "nrsx: <OsuSong> must be inside an <Entry>",
+    );
+    const standards = getExt<ExtDAH_standards>(rc, "DAH_standards");
+    rc.impacts.push(
+      standards.osuSong(
+        rc.context,
+        selfContribs(rc.currentEntry),
+        props.personal,
+        props.community ?? 0,
+      ),
+    );
+  });
+}

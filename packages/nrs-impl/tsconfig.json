@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsxImportSource": "@nrs-org/nrsx"
+  },
+  "exclude": []
+}

@@ -11,7 +11,7 @@
  * ```
  */
 
-import { assert, ScalarMatrix } from "@nrs-org/core";
+import { assert, ScalarMatrix, identityMatrix } from "@nrs-org/core";
 
 import type { ProgressStatus, ExtDAH_entry_progress } from "./index.ts";
 import type { ExtDAH_standards } from "@nrs-org/ext-dah-standards";
@@ -33,7 +33,7 @@ function getExt<T>(rc: RenderContext, name: string): T {
 }
 
 /**
- * Parse an episode duration string `MM:SS` or `HH:MM:SS` into milliseconds.
+ * Parse a duration string `MM:SS` or `HH:MM:SS` into milliseconds.
  */
 function parseEpisodeDuration(s: string): number {
   const parts = s.split(":").map(Number);
@@ -99,6 +99,69 @@ export function AnimeConsumedProgress(
         props.boredom,
         props.episodes,
         episodeDurationMs,
+      ),
+    );
+  });
+}
+
+// ---------------------------------------------------------------------------
+// MusicConsumedProgress component
+// ---------------------------------------------------------------------------
+
+export interface MusicConsumedProgressProps {
+  /** Total track duration in `MM:SS` or `HH:MM:SS` format. */
+  length: string;
+  /** Provenance annotation — `"user"` if manually curated. */
+  generatedBy?: string;
+}
+
+/**
+ * Records a "music consumed" impact for the current entry.
+ *
+ * Sets entry progress metadata (status = Completed, boredom = 1.0) and
+ * records a `consumed` impact via `ext-dah-standards`.
+ *
+ * Requires `DAH_standards` to be registered in the context.
+ * `DAH_entry_progress` is used if available but is not required.
+ */
+export function MusicConsumedProgress(
+  props: MusicConsumedProgressProps,
+): ImpactNode {
+  return asImpact((rc: RenderContext) => {
+    assert(
+      rc.currentEntry !== null,
+      "nrsx: <MusicConsumedProgress> must be inside an <Entry>",
+    );
+
+    const durationMs = parseEpisodeDuration(props.length);
+
+    // Set progress metadata if the extension is registered.
+    const progressExt = rc.context.extensions["DAH_entry_progress"] as
+      | ExtDAH_entry_progress
+      | undefined;
+    if (progressExt) {
+      progressExt.setProgress(rc.currentEntry.DAH_meta, {
+        status: "Completed" as ProgressStatus,
+        DAH_meta: {},
+      });
+    }
+
+    // Record the consumed impact.
+    const standards = rc.context.extensions["DAH_standards"] as
+      | ExtDAH_standards
+      | undefined;
+    assert(
+      standards !== undefined,
+      'nrsx: <MusicConsumedProgress> requires "DAH_standards" to be registered',
+    );
+
+    rc.impacts.push(
+      standards.consumed(
+        rc.context,
+        new Map([[rc.currentEntry.id, identityMatrix]]),
+        1.0,
+        durationMs,
+        "musicConsumed",
       ),
     );
   });

@@ -1,0 +1,120 @@
+/** @jsxImportSource @nrs-org/nrsx */
+
+import * as P from "../prelude";
+
+export default (
+  <P.Document>
+    {/* welcome to summer 2022, where everything is either an AKM reference or a */}
+    {/* disguised idol anime. */}
+    {/* at least the "dropped" rate will be lower than spring i think. (because idol) */}
+    {/* goodbye mr teppen and prima doll lol */}
+    {/* (the prima doll incident) */}
+    <P.Entry id="A-MAL-50760" title="Teppen!!!!!!!!!!!!!!!">
+      <P.Source adb={50760} ks={45729} al={143417} mal={50760} />
+      <P.BestGirl name="Yuzu Hosono" />
+      {/* art has some flaws, but whatever */}
+      <P.Visual type="animated" base={0.4} unique={0.4} />
+      {/* bye lol */}
+      <P.AnimeConsumedProgress status="Abandoned" boredom={0.7} episodes={4} />
+      <P.Dropped />
+      <P.KilledBy id="F-VGMDB-4499" potential={0.25} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.25} effect={0.75} />
+      <P.Writing character={0.3} story={0.3} pacing={0.8} originality={0.4} />
+    </P.Entry>
+    <P.Entry id="A-MAL-41589" title="Tokyo Mew Mew New ♡">
+      <P.Source adb={41589} ks={43098} al={117196} mal={41589} />
+      <P.BestGirl name="Ichigo Momomiya" />
+      {/* obligatory rst-cue studio(s) anime */}
+      {/* art is "interesting" ngl */}
+      {/* (basically it was somewhat decent while having 2002 character designs) */}
+      <P.Visual type="animated" base={0.4} unique={0.85} />
+      {/* the rescue mission succeeded let's goooooo */}
+      <P.AnimeConsumedProgress status="Abandoned" boredom={0.8} episodes={9} />
+      <P.Dropped />
+      <P.KilledBy id="F-VGMDB-4499" potential={0.1} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.1} effect={0.75} />
+      <P.Writing character={0.5} story={0.3} pacing={0.8} originality={0.4} />
+    </P.Entry>
+    <P.Entry id="A-MAL-50917" title="Prima Doll">
+      <P.Source adb={50917} ks={45812} al={144509} mal={50917} />
+      {/* the "fuck u setsuna yuki" and "akari kito pls come back" anime */}
+      {/* yep, ep 1 was ruined because of that bullcrap */}
+      {/* yep, the whole anime was ruined because of that girl */}
+      <P.BestGirl name="Otome Okumiya" />
+      {/* ichijou ruka my beloved (she can't save this anime sadge) */}
+      {/* the prima doll incident */}
+      <P.AnimeConsumedProgress status="Abandoned" boredom={0.9} episodes={4} />
+      <P.Dropped />
+      {/* somewhat unique and cute at the same time ngl */}
+      {/* but still good luck with that -1.0 boredom lol xddddddddddd */}
+      <P.Visual type="animated" base={0.75} unique={0.3} />
+      <P.NEI base={-0.1} emotions="AU" />
+      {/* well this is not killed by AKM and SB69, it's more like */}
+      {/* kusunoki tomori ruined the anime */}
+      <P.KilledBy id="F-VGMDB-4499" potential={0.1} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.1} effect={0.75} />
+      {/* kusunoki tomori - the prima doll destroyer */}
+      <P.Writing character={0.5} story={0.3} pacing={0.8} originality={0.8} />
+    </P.Entry>
+    <P.Entry id="A-MAL-49470" title="Mamahaha no Tsurego ga Motokano datta">
+      <P.Source adb={49470} ks={44913} al={136934} mal={49470} />
+      {/* from the creators of Seirei Gensouki (kimi no rhapsody reference) */}
+      {/* and something something villager a (kimi no rhapsody reference once */}
+      {/* again), introducing... */}
+      {/* no fucking way a romcom in our lord's year + 3537 - 1515 */}
+      {/* > Irido, Yume                Hidaka, Rina */}
+      {/* > Main                           Japanese */}
+      {/* oh i see */}
+      <P.BestGirl name="Yume Irido" />
+      {/* self-explanatory */}
+      {/* good art (the rosia girl looks breedable af) */}
+      <P.Visual type="animated" base={0.65} unique={0.2} />
+      {/* still shit anime anyways */}
+      {/* lmfao they used "inverse-killedby" method to not be dropped */}
+      <P.AnimeConsumedProgress status="Completed" boredom={0.8} episodes={12} />
+      {/* no way they made an reference to the "mc cried" atelier bs */}
+      {/* based rosia-chan and her baits */}
+      {/* brb watching the anime of the season */}
+      <P.KilledBy id="F-VGMDB-4499" potential={0.1} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.1} effect={0.75} />
+      <P.Writing character={0.3} story={0.3} pacing={0.8} originality={0.6} />
+    </P.Entry>
+    <P.Entry id="A-MAL-50999" title="Extreme Hearts">
+      <P.Source adb={50999} ks={45855} al={145001} mal={50999} />
+      <P.BestGirl name="Saki Kodaka" />
+      {/* saki is someone that we need but we don't deserve */}
+      {/* no fucking way ari ozawa and tomomi mineuchi in the same anime */}
+      {/* is this an ortensia incident reference???????????????????????? */}
+      {/* (more '?' than teppen let's go) */}
+      {/* the ari ozawa girl actually experienced an ortensia incident LMFAO */}
+      {/* xddddddddddddddddddddddd */}
+      {/* > love live VA's */}
+      {/* https://www.google.com/search?q=trolldespair */}
+      {/* "I'm a mechanic, and Michelle is in R&D" */}
+      {/* FUCK YOU GET OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD FUCK YOU GET */}
+      {/* OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD */}
+      {/* FUCK YOU GET OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD FUCK YOU GET */}
+      {/* OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD */}
+      {/* FUCK YOU GET OUT OF MY HEAD FUCK YOU GET OUT OF MY HEAD */}
+      <P.Visual type="animated" base={0.5} unique={0.1} />
+      <P.AnimeConsumedProgress status="Completed" boredom={1} episodes={12} />
+      <P.KilledBy id="F-VGMDB-4499" potential={0.5} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.5} effect={0.75} />
+      <P.Writing character={0.3} story={0.3} pacing={0.8} originality={0.7} />
+    </P.Entry>
+    <P.Entry id="A-MAL-50221" title="Shine Post">
+      <P.Source adb={50221} ks={45389} al={140753} mal={50221} />
+      <P.BestGirl name="Rio Seibu" />
+      {/* lmfao himekek VA */}
+      {/* they even got her to sing a ballad omegalul */}
+      {/* (they know about her songs in sb69 these cheeky mfs) */}
+      {/* https://www.youtube.com/watch?v=2mFt7arKiNE */}
+      <P.Visual type="animated" base={0.4} unique={0.5} />
+      <P.AnimeConsumedProgress status="Abandoned" boredom={0.8} episodes={7} />
+      <P.Dropped />
+      <P.KilledBy id="F-VGMDB-4499" potential={0.65} effect={0.1} />
+      <P.KilledBy id="M-VGMDB-AL-76155-2" potential={0.65} effect={0.75} />
+      <P.Writing character={0.6} story={0.5} pacing={0.8} originality={0.6} />
+    </P.Entry>
+  </P.Document>
+);

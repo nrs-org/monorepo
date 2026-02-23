@@ -18,6 +18,7 @@
     { "path": "./packages/ext-dah-serialize" },
     { "path": "./packages/ext-dah-serialize-json" },
     { "path": "./packages/ext-dah-validator-suppress" },
-    { "path": "./packages/nrsx" }
+    { "path": "./packages/nrsx" },
+    { "path": "./packages/nrs-impl" }
   ]
 }
